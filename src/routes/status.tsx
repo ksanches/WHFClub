@@ -93,7 +93,7 @@ const VARIANTS: Record<"sucesso" | "pendente" | "erro", Variant> = {
 
 function StatusPage() {
   const { status, ref } = Route.useSearch();
-  const v = VARIANTS[status];
+  const v = VARIANTS[status as "sucesso" | "pendente" | "erro"];
 
   const toneClasses =
     v.tone === "success"
