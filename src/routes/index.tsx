@@ -13,12 +13,16 @@ import {
   maskPhone,
   isValidMobileBR,
   PARQ_QUESTIONS,
-  PIX_INFO,
+  
   type Lot,
   type TicketType,
   type PaymentMethod,
 } from "@/lib/whf";
 import { getClassOccupancy } from "@/lib/occupancy.functions";
+import pixIndividualAsset from "@/assets/pix_individual.jpeg.asset.json";
+import pixDuplaAsset from "@/assets/pix_Dupla.jpeg.asset.json";
+
+const WHATSAPP_URL = "https://wa.me/5511981625143";
 
 
 export const Route = createFileRoute("/")({
@@ -559,18 +563,12 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 function PixScreen({ totalPrice, lotLabel, typeLabel, onClose }: { totalPrice: number; lotLabel: string; typeLabel: string; onClose: () => void }) {
-  const [copied, setCopied] = useState(false);
-
-  async function copyKey() {
-    try {
-      await navigator.clipboard.writeText(PIX_INFO.key);
-      setCopied(true);
-      toast.success("Chave Pix copiada");
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      toast.error("Não foi possível copiar");
-    }
-  }
+  const isDupla = typeLabel.toLowerCase().includes("dupla");
+  const qr = isDupla ? pixDuplaAsset : pixIndividualAsset;
+  const waMessage = encodeURIComponent(
+    `Olá! Segue o comprovante do Pix da inscrição WHF (${lotLabel} · ${typeLabel} · ${formatBRL(totalPrice)}).`
+  );
+  const waUrl = `${WHATSAPP_URL}?text=${waMessage}`;
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-primary/70 backdrop-blur-sm p-4 md:p-8">
@@ -587,26 +585,35 @@ function PixScreen({ totalPrice, lotLabel, typeLabel, onClose }: { totalPrice: n
 
         <div className="px-6 py-6 space-y-5">
           <p className="text-sm text-muted-foreground">
-            Sua inscrição foi registrada. Realize o Pix no valor de <span className="text-foreground font-semibold">{formatBRL(totalPrice)}</span> usando os dados abaixo:
+            Sua inscrição foi registrada. Escaneie o QR Code abaixo no app do seu banco para pagar <span className="text-foreground font-semibold">{formatBRL(totalPrice)}</span>.
           </p>
 
-          <dl className="rounded-md border border-border divide-y divide-border">
-            <PixRow label="Chave Pix" value={PIX_INFO.key} />
-            <PixRow label="Tipo de chave" value={PIX_INFO.keyType} />
-            <PixRow label="Beneficiário" value={PIX_INFO.beneficiary} />
-            <PixRow label="Banco" value={PIX_INFO.bank} />
-          </dl>
+          <div className="rounded-md border border-border bg-white p-3 flex items-center justify-center">
+            <img
+              src={qr.url}
+              alt={`QR Code Pix — ${typeLabel} — ${formatBRL(totalPrice)}`}
+              className="w-full max-w-xs h-auto"
+            />
+          </div>
 
-          <button
-            type="button"
-            onClick={copyKey}
-            className="w-full rounded-full bg-primary text-primary-foreground px-6 py-3 text-sm uppercase tracking-widest font-semibold hover:opacity-90"
+          <p className="text-xs text-center text-muted-foreground">
+            Beneficiário: <span className="text-foreground font-medium">LAIZZA AMANDA VIEGER SALES</span>
+          </p>
+
+          <a
+            href={waUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 w-full rounded-full bg-[#25D366] text-white px-6 py-3 text-sm uppercase tracking-widest font-semibold hover:opacity-90"
           >
-            {copied ? "Copiada!" : "Copiar chave Pix"}
-          </button>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-5 h-5 fill-current" aria-hidden="true">
+              <path d="M20.52 3.48A11.86 11.86 0 0 0 12.06 0C5.5 0 .16 5.34.16 11.9c0 2.1.55 4.14 1.6 5.94L0 24l6.32-1.66a11.9 11.9 0 0 0 5.74 1.46h.01c6.56 0 11.9-5.34 11.9-11.9 0-3.18-1.24-6.17-3.45-8.42ZM12.06 21.3h-.01a9.9 9.9 0 0 1-5.05-1.38l-.36-.21-3.75.98 1-3.66-.24-.38a9.86 9.86 0 0 1-1.52-5.25c0-5.46 4.44-9.9 9.9-9.9 2.65 0 5.13 1.03 7 2.9a9.86 9.86 0 0 1 2.9 7c0 5.46-4.44 9.9-9.87 9.9Zm5.7-7.4c-.31-.16-1.85-.91-2.14-1.02-.29-.1-.5-.16-.71.16-.21.31-.82 1.02-1 1.23-.19.21-.37.23-.68.08-.31-.16-1.32-.49-2.51-1.55-.93-.83-1.55-1.86-1.73-2.17-.18-.31-.02-.48.14-.63.14-.14.31-.37.47-.55.16-.19.21-.31.31-.52.1-.21.05-.39-.03-.55-.08-.16-.71-1.71-.98-2.34-.26-.62-.52-.53-.71-.54-.18-.01-.4-.01-.61-.01-.21 0-.55.08-.83.39-.29.31-1.09 1.06-1.09 2.58 0 1.52 1.11 2.99 1.27 3.2.16.21 2.19 3.34 5.31 4.68.74.32 1.32.51 1.77.65.74.24 1.42.2 1.95.12.6-.09 1.85-.75 2.11-1.48.26-.73.26-1.36.18-1.48-.08-.13-.29-.21-.6-.36Z"/>
+            </svg>
+            Enviar comprovante no WhatsApp
+          </a>
 
           <div className="rounded-md bg-secondary/60 border border-border p-4 text-xs text-muted-foreground">
-            {PIX_INFO.instructions}
+            Após efetuar o Pix, envie o comprovante pelo WhatsApp acima para confirmarmos sua inscrição.
           </div>
 
           <button type="button" onClick={onClose} className="w-full rounded-full border border-border px-6 py-3 text-sm uppercase tracking-widest hover:bg-secondary">
@@ -677,15 +684,6 @@ function CardScreen({ paymentUrl, totalPrice, lotLabel, typeLabel, onClose }: { 
           </button>
         </div>
       </div>
-    </div>
-  );
-}
-
-function PixRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between gap-4 px-4 py-3">
-      <dt className="text-xs uppercase tracking-widest text-muted-foreground">{label}</dt>
-      <dd className="text-sm font-medium text-right break-all">{value}</dd>
     </div>
   );
 }
