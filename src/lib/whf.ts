@@ -12,9 +12,12 @@ export interface Lot {
 
 export const CLASS_TIMES = ["11:00", "12:00"] as const;
 
-// Placeholder payment URLs — troque pelos links reais do InfinityPay.
+// Links reais do InfinityPay (cartão). Lotes 2 e 3 a confirmar.
 export const PAYMENT_URLS: Record<string, Record<TicketType, string>> = {
-  lote1: { individual: "#pagamento-lote1-individual", dupla: "#pagamento-lote1-dupla" },
+  lote1: {
+    individual: "https://link.infinitepay.io/laizza-amanda/VC1D-Q1YFRZjgS3-180,00",
+    dupla: "https://link.infinitepay.io/laizza-amanda/VC1D-oUopqjjEBe-300,00",
+  },
   lote2: { individual: "#pagamento-lote2-individual", dupla: "#pagamento-lote2-dupla" },
   lote3: { individual: "#pagamento-lote3-individual", dupla: "#pagamento-lote3-dupla" },
 };
@@ -22,6 +25,19 @@ export const PAYMENT_URLS: Record<string, Record<TicketType, string>> = {
 export function paymentUrlFor(lotId: string, type: TicketType): string {
   return PAYMENT_URLS[lotId]?.[type] ?? "#";
 }
+
+export type PaymentMethod = "cartao" | "pix";
+
+// Dados do Pix — a confirmar
+export const PIX_INFO = {
+  key: "A confirmar",
+  keyType: "A confirmar",
+  beneficiary: "A confirmar",
+  bank: "A confirmar",
+  instructions:
+    "Após efetuar o Pix, envie o comprovante para o Instagram @yousmilefight para confirmarmos sua inscrição.",
+};
+
 
 export function formatBRL(value: number) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });

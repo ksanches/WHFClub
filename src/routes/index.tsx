@@ -12,9 +12,12 @@ import {
   maskPhone,
   isValidMobileBR,
   PARQ_QUESTIONS,
+  PIX_INFO,
   type Lot,
   type TicketType,
+  type PaymentMethod,
 } from "@/lib/whf";
+
 
 export const Route = createFileRoute("/")({
   component: LandingPage,
@@ -242,10 +245,13 @@ function RegistrationDialog({ selection, onClose }: { selection: Selection; onCl
   const { lot, type } = selection;
   const [form, setForm] = useState<FormState>(initialForm);
   const [submitting, setSubmitting] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cartao");
+  const [pixConfirmation, setPixConfirmation] = useState(false);
 
   const paymentUrl = useMemo(() => paymentUrlFor(lot.id, type), [lot, type]);
   const price = type === "individual" ? lot.individual : lot.dupla;
   const isDupla = type === "dupla";
+  const totalPrice = isDupla ? price * 2 : price;
 
   function update<K extends keyof FormState>(k: K, v: FormState[K]) {
     setForm((f) => ({ ...f, [k]: v }));
@@ -301,7 +307,7 @@ function RegistrationDialog({ selection, onClose }: { selection: Selection; onCl
       partner_parq_q7: isDupla ? form.partnerParq[6] : null,
       partner_parq_notes: isDupla ? (form.partnerParqNotes || null) : null,
       event_suggestions: form.suggestions || null,
-      payment_url: paymentUrl,
+      payment_url: paymentMethod === "cartao" ? paymentUrl : "pix",
     });
     setSubmitting(false);
 
@@ -311,9 +317,19 @@ function RegistrationDialog({ selection, onClose }: { selection: Selection; onCl
       return;
     }
 
-    toast.success("Inscrição registrada! Redirecionando para o pagamento...");
-    setTimeout(() => { window.location.href = paymentUrl; }, 900);
+    if (paymentMethod === "cartao") {
+      toast.success("Inscrição registrada! Redirecionando para o pagamento...");
+      setTimeout(() => { window.location.href = paymentUrl; }, 900);
+    } else {
+      toast.success("Inscrição registrada! Confira os dados do Pix.");
+      setPixConfirmation(true);
+    }
   }
+
+  if (pixConfirmation) {
+    return <PixScreen totalPrice={totalPrice} lotLabel={lot.label} typeLabel={isDupla ? "Dupla" : "Individual"} onClose={onClose} />;
+  }
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-primary/70 backdrop-blur-sm p-4 md:p-8">
@@ -395,18 +411,43 @@ function RegistrationDialog({ selection, onClose }: { selection: Selection; onCl
             </Field>
           </Section>
 
+          <Section title="Forma de pagamento">
+            <div className="grid grid-cols-2 gap-3">
+              {([
+                { id: "cartao", label: "Cartão", hint: "InfinityPay" },
+                { id: "pix", label: "Pix", hint: "Transferência" },
+              ] as const).map((opt) => {
+                const selected = paymentMethod === opt.id;
+                return (
+                  <label key={opt.id} className={`cursor-pointer text-center rounded-md border p-3 transition ${selected ? "border-accent bg-accent/10" : "border-border hover:border-accent"}`}>
+                    <input type="radio" name="paymentMethod" value={opt.id} checked={selected} onChange={() => setPaymentMethod(opt.id)} className="sr-only" />
+                    <span className="block font-display text-lg">{opt.label}</span>
+                    <span className="block text-[10px] uppercase tracking-widest text-muted-foreground">{opt.hint}</span>
+                  </label>
+                );
+              })}
+            </div>
+          </Section>
+
           <div className="pt-2 flex flex-col sm:flex-row-reverse gap-3">
             <button type="submit" disabled={submitting}
               className="flex-1 rounded-full bg-primary text-primary-foreground px-6 py-3 text-sm uppercase tracking-widest font-semibold hover:opacity-90 disabled:opacity-60">
-              {submitting ? "Enviando..." : `Finalizar e pagar · ${formatCents(Math.round(price * 100))}${isDupla ? " (por pessoa)" : ""}`}
+              {submitting
+                ? "Enviando..."
+                : paymentMethod === "cartao"
+                  ? `Finalizar e pagar · ${formatCents(Math.round(price * 100))}${isDupla ? " (por pessoa)" : ""}`
+                  : `Finalizar e ver dados do Pix · ${formatCents(Math.round(totalPrice * 100))}`}
             </button>
             <button type="button" onClick={onClose} className="rounded-full border border-border px-6 py-3 text-sm uppercase tracking-widest hover:bg-secondary">
               Cancelar
             </button>
           </div>
           <p className="text-[11px] text-muted-foreground text-center">
-            Ao finalizar, você será direcionada para o pagamento seguro via InfinityPay.
+            {paymentMethod === "cartao"
+              ? "Ao finalizar, você será direcionada para o pagamento seguro via InfinityPay."
+              : "Ao finalizar, exibiremos os dados do Pix para você concluir o pagamento."}
           </p>
+
         </form>
       </div>
     </div>
@@ -469,5 +510,74 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <span className="block text-xs uppercase tracking-widest text-muted-foreground mb-1">{label}</span>
       {children}
     </label>
+  );
+}
+
+function PixScreen({ totalPrice, lotLabel, typeLabel, onClose }: { totalPrice: number; lotLabel: string; typeLabel: string; onClose: () => void }) {
+  const [copied, setCopied] = useState(false);
+
+  async function copyKey() {
+    try {
+      await navigator.clipboard.writeText(PIX_INFO.key);
+      setCopied(true);
+      toast.success("Chave Pix copiada");
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error("Não foi possível copiar");
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-primary/70 backdrop-blur-sm p-4 md:p-8">
+      <div className="w-full max-w-lg bg-background rounded-lg shadow-xl border border-accent/40">
+        <div className="border-b border-border px-6 py-4 flex items-start justify-between gap-4">
+          <div>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+              {lotLabel} · {typeLabel} · {formatBRL(totalPrice)}
+            </p>
+            <h3 className="font-display text-2xl">Pagamento via Pix</h3>
+          </div>
+          <button type="button" onClick={onClose} aria-label="Fechar" className="text-muted-foreground hover:text-foreground text-2xl leading-none">×</button>
+        </div>
+
+        <div className="px-6 py-6 space-y-5">
+          <p className="text-sm text-muted-foreground">
+            Sua inscrição foi registrada. Realize o Pix no valor de <span className="text-foreground font-semibold">{formatBRL(totalPrice)}</span> usando os dados abaixo:
+          </p>
+
+          <dl className="rounded-md border border-border divide-y divide-border">
+            <PixRow label="Chave Pix" value={PIX_INFO.key} />
+            <PixRow label="Tipo de chave" value={PIX_INFO.keyType} />
+            <PixRow label="Beneficiário" value={PIX_INFO.beneficiary} />
+            <PixRow label="Banco" value={PIX_INFO.bank} />
+          </dl>
+
+          <button
+            type="button"
+            onClick={copyKey}
+            className="w-full rounded-full bg-primary text-primary-foreground px-6 py-3 text-sm uppercase tracking-widest font-semibold hover:opacity-90"
+          >
+            {copied ? "Copiada!" : "Copiar chave Pix"}
+          </button>
+
+          <div className="rounded-md bg-secondary/60 border border-border p-4 text-xs text-muted-foreground">
+            {PIX_INFO.instructions}
+          </div>
+
+          <button type="button" onClick={onClose} className="w-full rounded-full border border-border px-6 py-3 text-sm uppercase tracking-widest hover:bg-secondary">
+            Fechar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PixRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-4 px-4 py-3">
+      <dt className="text-xs uppercase tracking-widest text-muted-foreground">{label}</dt>
+      <dd className="text-sm font-medium text-right break-all">{value}</dd>
+    </div>
   );
 }
