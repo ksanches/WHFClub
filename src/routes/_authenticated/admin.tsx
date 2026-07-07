@@ -1,0 +1,283 @@
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { Toaster, toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { formatCents } from "@/lib/whf";
+
+export const Route = createFileRoute("/_authenticated/admin")({
+  component: AdminPage,
+});
+
+interface Lot {
+  id: string;
+  label: string;
+  total: number;
+  individual_price_cents: number;
+  dupla_price_cents: number;
+  active: boolean;
+  sort_order: number;
+}
+
+interface Registration {
+  id: string;
+  created_at: string;
+  full_name: string;
+  email: string;
+  phone: string;
+  cpf: string;
+  ticket_batch: string;
+  ticket_type: string;
+  ticket_price_cents: number;
+  class_time: string;
+  partner_full_name: string | null;
+  partner_email: string | null;
+  partner_phone: string | null;
+  address: string;
+  event_suggestions: string | null;
+  parq_notes: string | null;
+  parq_q1: boolean; parq_q2: boolean; parq_q3: boolean; parq_q4: boolean;
+  parq_q5: boolean; parq_q6: boolean; parq_q7: boolean;
+  partner_parq_q1: boolean | null; partner_parq_q2: boolean | null;
+  partner_parq_q3: boolean | null; partner_parq_q4: boolean | null;
+  partner_parq_q5: boolean | null; partner_parq_q6: boolean | null;
+  partner_parq_q7: boolean | null;
+  partner_parq_notes: string | null;
+}
+
+function AdminPage() {
+  const navigate = useNavigate();
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [lots, setLots] = useState<Lot[]>([]);
+  const [regs, setRegs] = useState<Registration[]>([]);
+  const [openRegId, setOpenRegId] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const { data: u } = await supabase.auth.getUser();
+      if (!u.user) return;
+      const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", u.user.id);
+      const admin = !!roles?.some((r) => r.role === "admin");
+      setIsAdmin(admin);
+      if (!admin) return;
+      await Promise.all([loadLots(), loadRegs()]);
+    })();
+  }, []);
+
+  async function loadLots() {
+    const { data, error } = await supabase.from("lots").select("*").order("sort_order");
+    if (error) toast.error(error.message);
+    else setLots((data as Lot[]) ?? []);
+  }
+
+  async function loadRegs() {
+    const { data, error } = await supabase.from("registrations").select("*").order("created_at", { ascending: false });
+    if (error) toast.error(error.message);
+    else setRegs((data as Registration[]) ?? []);
+  }
+
+  async function toggleLot(lot: Lot) {
+    const { error } = await supabase.from("lots").update({ active: !lot.active }).eq("id", lot.id);
+    if (error) toast.error(error.message);
+    else {
+      toast.success(`${lot.label} ${!lot.active ? "ativado" : "desativado"}`);
+      loadLots();
+    }
+  }
+
+  async function signOut() {
+    await supabase.auth.signOut();
+    navigate({ to: "/auth" });
+  }
+
+  if (isAdmin === null) {
+    return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Carregando…</div>;
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-6 text-center">
+        <div>
+          <h1 className="font-display text-3xl text-primary">Acesso restrito</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Sua conta ainda não tem permissão de admin. Peça a um administrador para conceder acesso.
+          </p>
+          <button onClick={signOut} className="mt-6 rounded-full border border-border px-6 py-2 text-xs uppercase tracking-widest">
+            Sair
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const openReg = regs.find((r) => r.id === openRegId) ?? null;
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Toaster position="top-center" />
+
+      <header className="border-b border-border px-6 py-4 flex items-center justify-between">
+        <h1 className="font-display text-2xl text-primary">Admin · WHF</h1>
+        <button onClick={signOut} className="text-xs uppercase tracking-widest text-muted-foreground hover:text-primary">
+          Sair
+        </button>
+      </header>
+
+      <main className="mx-auto max-w-6xl px-6 py-8 space-y-10">
+        {/* Lots */}
+        <section>
+          <h2 className="font-display text-xl mb-4">Lotes</h2>
+          <div className="grid md:grid-cols-3 gap-4">
+            {lots.map((lot) => {
+              const sold = regs.filter((r) => r.ticket_batch === lot.label).length;
+              return (
+                <div key={lot.id} className="rounded-lg border border-border p-5 bg-card">
+                  <div className="flex items-center justify-between">
+                    <p className="font-display text-lg">{lot.label}</p>
+                    <span className={`text-[10px] uppercase tracking-widest px-2 py-0.5 rounded ${lot.active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+                      {lot.active ? "Ativo" : "Inativo"}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    {sold}/{lot.total} vagas · {formatCents(lot.individual_price_cents)} indiv. · {formatCents(lot.dupla_price_cents)} dupla
+                  </p>
+                  <button onClick={() => toggleLot(lot)}
+                    className="mt-4 w-full rounded-full border border-border py-2 text-xs uppercase tracking-widest hover:bg-secondary">
+                    {lot.active ? "Desativar" : "Ativar"}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* Registrations */}
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-display text-xl">Inscrições ({regs.length})</h2>
+            <button onClick={loadRegs} className="text-xs uppercase tracking-widest text-muted-foreground hover:text-primary">
+              Atualizar
+            </button>
+          </div>
+          <div className="overflow-x-auto rounded-lg border border-border">
+            <table className="min-w-full text-sm">
+              <thead className="bg-secondary text-xs uppercase tracking-widest">
+                <tr>
+                  <th className="text-left px-3 py-2">Data</th>
+                  <th className="text-left px-3 py-2">Nome</th>
+                  <th className="text-left px-3 py-2">Contato</th>
+                  <th className="text-left px-3 py-2">Lote</th>
+                  <th className="text-left px-3 py-2">Tipo</th>
+                  <th className="text-left px-3 py-2">Aula</th>
+                  <th className="text-left px-3 py-2">Dupla</th>
+                  <th className="px-3 py-2"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {regs.map((r) => (
+                  <tr key={r.id} className="border-t border-border">
+                    <td className="px-3 py-2 text-xs">{new Date(r.created_at).toLocaleString("pt-BR")}</td>
+                    <td className="px-3 py-2">{r.full_name}</td>
+                    <td className="px-3 py-2 text-xs">
+                      <div>{r.email}</div>
+                      <div className="text-muted-foreground">{r.phone}</div>
+                    </td>
+                    <td className="px-3 py-2">{r.ticket_batch}</td>
+                    <td className="px-3 py-2">{r.ticket_type}</td>
+                    <td className="px-3 py-2">{r.class_time}</td>
+                    <td className="px-3 py-2 text-xs">{r.partner_full_name ?? "—"}</td>
+                    <td className="px-3 py-2">
+                      <button onClick={() => setOpenRegId(r.id)} className="text-xs uppercase tracking-widest text-primary hover:underline">
+                        Ver
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {regs.length === 0 && (
+                  <tr><td colSpan={8} className="text-center py-8 text-muted-foreground text-sm">Nenhuma inscrição ainda.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+
+      {openReg && <RegistrationDetail reg={openReg} onClose={() => setOpenRegId(null)} />}
+    </div>
+  );
+}
+
+function RegistrationDetail({ reg, onClose }: { reg: Registration; onClose: () => void }) {
+  const parqLabels = ["Coração/supervisão", "Dor no peito (ativ.)", "Dor no peito (repouso)", "Tontura/desequilíbrio", "Problema ósseo/articular", "Medicamento coração/pressão", "Outra razão"];
+  const parq = [reg.parq_q1, reg.parq_q2, reg.parq_q3, reg.parq_q4, reg.parq_q5, reg.parq_q6, reg.parq_q7];
+  const partnerParq = [reg.partner_parq_q1, reg.partner_parq_q2, reg.partner_parq_q3, reg.partner_parq_q4, reg.partner_parq_q5, reg.partner_parq_q6, reg.partner_parq_q7];
+  const hasPartner = !!reg.partner_full_name;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-primary/70 backdrop-blur-sm p-4">
+      <div className="w-full max-w-2xl bg-background rounded-lg border border-accent/40 p-6">
+        <div className="flex items-start justify-between">
+          <h3 className="font-display text-2xl">{reg.full_name}</h3>
+          <button onClick={onClose} className="text-2xl leading-none">×</button>
+        </div>
+        <p className="text-xs uppercase tracking-widest text-muted-foreground">
+          {reg.ticket_batch} · {reg.ticket_type} · {formatCents(reg.ticket_price_cents)} · aula {reg.class_time}
+        </p>
+
+        <Block title="Contato">
+          <p>{reg.email} · {reg.phone}</p>
+          <p className="text-muted-foreground">CPF: {reg.cpf}</p>
+          <p className="text-muted-foreground">{reg.address}</p>
+        </Block>
+
+        <Block title="PAR-Q">
+          <ul className="space-y-1">
+            {parqLabels.map((l, i) => (
+              <li key={i} className="flex justify-between">
+                <span>{l}</span>
+                <span className={parq[i] ? "text-destructive font-semibold" : "text-muted-foreground"}>{parq[i] ? "SIM" : "não"}</span>
+              </li>
+            ))}
+          </ul>
+          {reg.parq_notes && <p className="mt-2 text-muted-foreground italic">"{reg.parq_notes}"</p>}
+        </Block>
+
+        {hasPartner && (
+          <>
+            <Block title="Dupla">
+              <p>{reg.partner_full_name}</p>
+              <p className="text-muted-foreground">{reg.partner_email} · {reg.partner_phone}</p>
+            </Block>
+            <Block title="PAR-Q da dupla">
+              <ul className="space-y-1">
+                {parqLabels.map((l, i) => (
+                  <li key={i} className="flex justify-between">
+                    <span>{l}</span>
+                    <span className={partnerParq[i] ? "text-destructive font-semibold" : "text-muted-foreground"}>
+                      {partnerParq[i] === null ? "—" : partnerParq[i] ? "SIM" : "não"}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              {reg.partner_parq_notes && <p className="mt-2 text-muted-foreground italic">"{reg.partner_parq_notes}"</p>}
+            </Block>
+          </>
+        )}
+
+        {reg.event_suggestions && (
+          <Block title="Sugestões">
+            <p className="italic">"{reg.event_suggestions}"</p>
+          </Block>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Block({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="mt-5 text-sm">
+      <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">{title}</p>
+      {children}
+    </div>
+  );
+}
