@@ -179,7 +179,7 @@ function Lots({ lots, loading, onSelect }: { lots: Lot[]; loading: boolean; onSe
     <section id="lotes" className="mx-auto max-w-6xl px-6 py-20">
       <div className="text-center mb-14">
         <p className="italic-serif text-accent uppercase tracking-widest text-xs">Ingressos</p>
-        <h2 className="mt-2 font-display text-4xl md:text-5xl">Reserve sua vaga</h2>
+        <h2 className="mt-2 font-display text-4xl md:text-5xl">Reserve sua Vaga</h2>
         <p className="mt-4 text-sm text-muted-foreground max-w-xl mx-auto">
           Individual ou em dupla — venha com uma amiga e pague menos. Vagas limitadas.
         </p>
