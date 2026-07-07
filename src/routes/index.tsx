@@ -512,3 +512,72 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     </label>
   );
 }
+
+function PixScreen({ totalPrice, lotLabel, typeLabel, onClose }: { totalPrice: number; lotLabel: string; typeLabel: string; onClose: () => void }) {
+  const [copied, setCopied] = useState(false);
+
+  async function copyKey() {
+    try {
+      await navigator.clipboard.writeText(PIX_INFO.key);
+      setCopied(true);
+      toast.success("Chave Pix copiada");
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error("Não foi possível copiar");
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-primary/70 backdrop-blur-sm p-4 md:p-8">
+      <div className="w-full max-w-lg bg-background rounded-lg shadow-xl border border-accent/40">
+        <div className="border-b border-border px-6 py-4 flex items-start justify-between gap-4">
+          <div>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+              {lotLabel} · {typeLabel} · {formatBRL(totalPrice)}
+            </p>
+            <h3 className="font-display text-2xl">Pagamento via Pix</h3>
+          </div>
+          <button type="button" onClick={onClose} aria-label="Fechar" className="text-muted-foreground hover:text-foreground text-2xl leading-none">×</button>
+        </div>
+
+        <div className="px-6 py-6 space-y-5">
+          <p className="text-sm text-muted-foreground">
+            Sua inscrição foi registrada. Realize o Pix no valor de <span className="text-foreground font-semibold">{formatBRL(totalPrice)}</span> usando os dados abaixo:
+          </p>
+
+          <dl className="rounded-md border border-border divide-y divide-border">
+            <PixRow label="Chave Pix" value={PIX_INFO.key} />
+            <PixRow label="Tipo de chave" value={PIX_INFO.keyType} />
+            <PixRow label="Beneficiário" value={PIX_INFO.beneficiary} />
+            <PixRow label="Banco" value={PIX_INFO.bank} />
+          </dl>
+
+          <button
+            type="button"
+            onClick={copyKey}
+            className="w-full rounded-full bg-primary text-primary-foreground px-6 py-3 text-sm uppercase tracking-widest font-semibold hover:opacity-90"
+          >
+            {copied ? "Copiada!" : "Copiar chave Pix"}
+          </button>
+
+          <div className="rounded-md bg-secondary/60 border border-border p-4 text-xs text-muted-foreground">
+            {PIX_INFO.instructions}
+          </div>
+
+          <button type="button" onClick={onClose} className="w-full rounded-full border border-border px-6 py-3 text-sm uppercase tracking-widest hover:bg-secondary">
+            Fechar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PixRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-4 px-4 py-3">
+      <dt className="text-xs uppercase tracking-widest text-muted-foreground">{label}</dt>
+      <dd className="text-sm font-medium text-right break-all">{value}</dd>
+    </div>
+  );
+}
