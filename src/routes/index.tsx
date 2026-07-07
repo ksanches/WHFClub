@@ -4,6 +4,7 @@ import { Toaster, toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import {
   CLASS_TIMES,
+  CLASS_CAPACITY,
   paymentUrlFor,
   formatBRL,
   formatCents,
@@ -42,6 +43,16 @@ function LandingPage() {
   const [selection, setSelection] = useState<Selection | null>(null);
   const [lots, setLots] = useState<Lot[]>([]);
   const [loading, setLoading] = useState(true);
+  const [occupancy, setOccupancy] = useState<Record<string, number>>({});
+
+  async function loadOccupancy() {
+    const { data } = await supabase.rpc("get_class_occupancy");
+    const map: Record<string, number> = {};
+    ((data as { class_time: string; participants: number }[] | null) ?? []).forEach((r) => {
+      map[r.class_time] = r.participants;
+    });
+    setOccupancy(map);
+  }
 
   useEffect(() => {
     supabase
@@ -63,6 +74,7 @@ function LandingPage() {
         );
         setLoading(false);
       });
+    loadOccupancy();
   }, []);
 
   return (
@@ -74,7 +86,14 @@ function LandingPage() {
       <Lots lots={lots} loading={loading} onSelect={(lot, type) => setSelection({ lot, type })} />
       <Footer />
 
-      {selection && <RegistrationDialog selection={selection} onClose={() => setSelection(null)} />}
+      {selection && (
+        <RegistrationDialog
+          selection={selection}
+          occupancy={occupancy}
+          onClose={() => setSelection(null)}
+          onSubmitted={loadOccupancy}
+        />
+      )}
     </div>
   );
 }
@@ -241,7 +260,7 @@ const initialForm: FormState = {
   suggestions: "",
 };
 
-function RegistrationDialog({ selection, onClose }: { selection: Selection; onClose: () => void }) {
+function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { selection: Selection; occupancy: Record<string, number>; onClose: () => void; onSubmitted: () => void }) {
   const { lot, type } = selection;
   const [form, setForm] = useState<FormState>(initialForm);
   const [submitting, setSubmitting] = useState(false);
@@ -253,6 +272,8 @@ function RegistrationDialog({ selection, onClose }: { selection: Selection; onCl
   const price = type === "individual" ? lot.individual : lot.dupla;
   const isDupla = type === "dupla";
   const totalPrice = isDupla ? price * 2 : price;
+  const seatsNeeded = isDupla ? 2 : 1;
+  const availableTimes = CLASS_TIMES.filter((t) => (occupancy[t] ?? 0) + seatsNeeded <= CLASS_CAPACITY);
 
   function update<K extends keyof FormState>(k: K, v: FormState[K]) {
     setForm((f) => ({ ...f, [k]: v }));
@@ -266,6 +287,9 @@ function RegistrationDialog({ selection, onClose }: { selection: Selection; onCl
     if (!isValidMobileBR(form.phone)) return toast.error("Telefone móvel inválido.");
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email)) return toast.error("E-mail inválido.");
     if (!form.classTime) return toast.error("Escolha o horário da aula.");
+    if ((occupancy[form.classTime] ?? 0) + seatsNeeded > CLASS_CAPACITY) {
+      return toast.error("Este horário acabou de lotar. Escolha outro.");
+    }
     if (form.parq.some((v) => v === null)) return toast.error("Responda todo o PAR-Q.");
 
     if (isDupla) {
@@ -318,6 +342,9 @@ function RegistrationDialog({ selection, onClose }: { selection: Selection; onCl
       return;
     }
 
+
+    onSubmitted();
+
     if (paymentMethod === "cartao") {
       toast.success("Inscrição registrada! Finalize o pagamento.");
       setCardConfirmation(true);
@@ -369,14 +396,24 @@ function RegistrationDialog({ selection, onClose }: { selection: Selection; onCl
               <input required value={form.address} onChange={(e) => update("address", e.target.value)} placeholder="Rua, número, bairro, cidade — SP" className={inputCls} />
             </Field>
             <Field label="Horário da aula">
-              <div className="flex gap-3">
-                {CLASS_TIMES.map((t) => (
-                  <label key={t} className={`flex-1 cursor-pointer text-center rounded-md border p-3 transition ${form.classTime === t ? "border-accent bg-accent/10" : "border-border hover:border-accent"}`}>
-                    <input type="radio" name="classTime" value={t} checked={form.classTime === t} onChange={() => update("classTime", t)} className="sr-only" />
-                    <span className="font-display text-lg">{t}</span>
-                  </label>
-                ))}
-              </div>
+              {availableTimes.length === 0 ? (
+                <p className="text-sm text-destructive">Todas as aulas estão lotadas no momento.</p>
+              ) : (
+                <div className="flex gap-3">
+                  {availableTimes.map((t) => (
+                    <label key={t} className={`flex-1 cursor-pointer text-center rounded-md border p-3 transition ${form.classTime === t ? "border-accent bg-accent/10" : "border-border hover:border-accent"}`}>
+                      <input type="radio" name="classTime" value={t} checked={form.classTime === t} onChange={() => update("classTime", t)} className="sr-only" />
+                      <span className="font-display text-lg">{t}</span>
+                      <span className="block text-[10px] uppercase tracking-widest text-muted-foreground mt-1">
+                        {CLASS_CAPACITY - (occupancy[t] ?? 0)} vagas
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              )}
+              {isDupla && availableTimes.length < CLASS_TIMES.length && (
+                <p className="mt-2 text-xs text-muted-foreground">Horários com menos de 2 vagas ficam ocultos para duplas.</p>
+              )}
             </Field>
             <label className="flex items-start gap-3 text-sm">
               <input type="checkbox" checked={form.acceptMessages} onChange={(e) => update("acceptMessages", e.target.checked)} className="mt-1" />

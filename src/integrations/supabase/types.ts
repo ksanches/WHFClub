@@ -190,6 +190,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_class_occupancy: {
+        Args: never
+        Returns: {
+          class_time: string
+          participants: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
