@@ -247,6 +247,7 @@ function RegistrationDialog({ selection, onClose }: { selection: Selection; onCl
   const [submitting, setSubmitting] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cartao");
   const [pixConfirmation, setPixConfirmation] = useState(false);
+  const [cardConfirmation, setCardConfirmation] = useState(false);
 
   const paymentUrl = useMemo(() => paymentUrlFor(lot.id, type), [lot, type]);
   const price = type === "individual" ? lot.individual : lot.dupla;
@@ -318,12 +319,16 @@ function RegistrationDialog({ selection, onClose }: { selection: Selection; onCl
     }
 
     if (paymentMethod === "cartao") {
-      toast.success("Inscrição registrada! Redirecionando para o pagamento...");
-      setTimeout(() => { window.location.href = paymentUrl; }, 900);
+      toast.success("Inscrição registrada! Finalize o pagamento.");
+      setCardConfirmation(true);
     } else {
       toast.success("Inscrição registrada! Confira os dados do Pix.");
       setPixConfirmation(true);
     }
+  }
+
+  if (cardConfirmation) {
+    return <CardScreen paymentUrl={paymentUrl} totalPrice={totalPrice} lotLabel={lot.label} typeLabel={isDupla ? "Dupla" : "Individual"} onClose={onClose} />;
   }
 
   if (pixConfirmation) {
@@ -563,6 +568,69 @@ function PixScreen({ totalPrice, lotLabel, typeLabel, onClose }: { totalPrice: n
           <div className="rounded-md bg-secondary/60 border border-border p-4 text-xs text-muted-foreground">
             {PIX_INFO.instructions}
           </div>
+
+          <button type="button" onClick={onClose} className="w-full rounded-full border border-border px-6 py-3 text-sm uppercase tracking-widest hover:bg-secondary">
+            Fechar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CardScreen({ paymentUrl, totalPrice, lotLabel, typeLabel, onClose }: { paymentUrl: string; totalPrice: number; lotLabel: string; typeLabel: string; onClose: () => void }) {
+  const [copied, setCopied] = useState(false);
+
+  async function copyLink() {
+    try {
+      await navigator.clipboard.writeText(paymentUrl);
+      setCopied(true);
+      toast.success("Link copiado");
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error("Não foi possível copiar");
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-primary/70 backdrop-blur-sm p-4 md:p-8">
+      <div className="w-full max-w-lg bg-background rounded-lg shadow-xl border border-accent/40">
+        <div className="border-b border-border px-6 py-4 flex items-start justify-between gap-4">
+          <div>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+              {lotLabel} · {typeLabel} · {formatBRL(totalPrice)}
+            </p>
+            <h3 className="font-display text-2xl">Pagamento no cartão</h3>
+          </div>
+          <button type="button" onClick={onClose} aria-label="Fechar" className="text-muted-foreground hover:text-foreground text-2xl leading-none">×</button>
+        </div>
+
+        <div className="px-6 py-6 space-y-5">
+          <p className="text-sm text-muted-foreground">
+            Sua inscrição foi registrada. Clique no botão abaixo para finalizar o pagamento de <span className="text-foreground font-semibold">{formatBRL(totalPrice)}</span> no InfinityPay.
+          </p>
+
+          <a
+            href={paymentUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block w-full text-center rounded-full bg-primary text-primary-foreground px-6 py-4 text-sm uppercase tracking-widest font-semibold hover:opacity-90"
+          >
+            Ir para o pagamento
+          </a>
+
+          <div className="rounded-md bg-secondary/60 border border-border p-4 text-xs text-muted-foreground break-all">
+            Se o botão não abrir, copie e cole este link no navegador:
+            <div className="mt-2 text-foreground">{paymentUrl}</div>
+          </div>
+
+          <button
+            type="button"
+            onClick={copyLink}
+            className="w-full rounded-full border border-border px-6 py-3 text-sm uppercase tracking-widest hover:bg-secondary"
+          >
+            {copied ? "Link copiado!" : "Copiar link"}
+          </button>
 
           <button type="button" onClick={onClose} className="w-full rounded-full border border-border px-6 py-3 text-sm uppercase tracking-widest hover:bg-secondary">
             Fechar
