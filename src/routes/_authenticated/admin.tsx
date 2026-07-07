@@ -129,6 +129,7 @@ function AdminPage() {
     const yn = (v: boolean | null) => (v === null ? "" : v ? "SIM" : "não");
     return regs.map((r) => ({
       "Data": new Date(r.created_at).toLocaleString("pt-BR"),
+      "Status": STATUS_OPTIONS.find((o) => o.value === r.status)?.label ?? r.status,
       "Nome": r.full_name,
       "CPF": r.cpf,
       "E-mail": r.email,
