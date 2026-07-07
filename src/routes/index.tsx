@@ -18,6 +18,7 @@ import {
   type TicketType,
   type PaymentMethod,
 } from "@/lib/whf";
+import { getClassOccupancy } from "@/lib/occupancy.functions";
 
 
 export const Route = createFileRoute("/")({
