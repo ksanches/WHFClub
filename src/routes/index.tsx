@@ -342,6 +342,9 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
       return;
     }
 
+
+    onSubmitted();
+
     if (paymentMethod === "cartao") {
       toast.success("Inscrição registrada! Finalize o pagamento.");
       setCardConfirmation(true);
