@@ -247,6 +247,7 @@ function RegistrationDialog({ selection, onClose }: { selection: Selection; onCl
   const [submitting, setSubmitting] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cartao");
   const [pixConfirmation, setPixConfirmation] = useState(false);
+  const [cardConfirmation, setCardConfirmation] = useState(false);
 
   const paymentUrl = useMemo(() => paymentUrlFor(lot.id, type), [lot, type]);
   const price = type === "individual" ? lot.individual : lot.dupla;
