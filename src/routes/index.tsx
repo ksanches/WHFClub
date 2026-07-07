@@ -1,24 +1,652 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
+import { Toaster, toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  LOTS,
+  CLASS_TIMES,
+  PAYMENT_URLS,
+  formatBRL,
+  maskCPF,
+  isValidCPF,
+  maskPhone,
+  isValidMobileBR,
+  type Lot,
+  type TicketType,
+} from "@/lib/whf";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
-  component: Index,
+  component: LandingPage,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
+interface Selection {
+  lot: Lot;
+  type: TicketType;
+}
+
+const PARQ = [
+  "Algum médico já disse que você possui algum problema de coração e que só deveria realizar atividade física supervisionada por profissionais de saúde?",
+  "Você sente dores no peito quando pratica atividade física?",
+  "No último mês, você sentiu dores no peito quando não estava praticando atividade física?",
+  "Você apresenta desequilíbrio devido à tontura e/ou perda de consciência?",
+  "Você possui algum problema ósseo ou articular que poderia ser piorado pela atividade física?",
+  "Você toma atualmente algum medicamento para pressão arterial e/ou problema de coração?",
+  "Sabe de alguma outra razão pela qual você não deve praticar atividade física?",
+];
+
+function LandingPage() {
+  const [selection, setSelection] = useState<Selection | null>(null);
+
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
+    <div className="min-h-screen bg-background text-foreground">
+      <Toaster
+        position="top-center"
+        toastOptions={{ style: { fontFamily: "var(--font-sans)" } }}
       />
+
+      <Hero onPickLot={() => document.getElementById("lotes")?.scrollIntoView({ behavior: "smooth" })} />
+      <Manifesto />
+      <EventInfo />
+      <Lots onSelect={(lot, type) => setSelection({ lot, type })} />
+      <Footer />
+
+      {selection && (
+        <RegistrationDialog
+          selection={selection}
+          onClose={() => setSelection(null)}
+        />
+      )}
     </div>
+  );
+}
+
+/* ---------------- HERO ---------------- */
+
+function Hero({ onPickLot }: { onPickLot: () => void }) {
+  return (
+    <header className="relative overflow-hidden bg-primary text-primary-foreground">
+      <div className="absolute inset-0 opacity-[0.08]" style={{
+        backgroundImage:
+          "radial-gradient(circle at 20% 10%, var(--gold) 0, transparent 40%), radial-gradient(circle at 80% 90%, var(--gold) 0, transparent 40%)",
+      }} />
+      <div className="relative mx-auto max-w-5xl px-6 pt-16 pb-20 md:pt-24 md:pb-28 text-center">
+        <div className="mx-auto mb-8 wax-seal">WHF</div>
+
+        <p className="italic-serif text-accent tracking-widest text-xs md:text-sm uppercase">
+          Save the date · 24.07
+        </p>
+        <h1 className="mt-4 font-display text-5xl md:text-7xl leading-none">
+          WANNA<br />HAVE FUN.
+        </h1>
+        <p className="italic-serif mt-6 text-lg md:text-2xl text-accent">
+          "Treinar é o plano. Se divertir é a regra."
+        </p>
+
+        <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <button
+            onClick={onPickLot}
+            className="rounded-full bg-accent px-8 py-3 text-sm font-semibold uppercase tracking-widest text-primary hover:opacity-90 transition"
+          >
+            Garantir meu ingresso
+          </button>
+          <a
+            href="#info"
+            className="rounded-full border border-accent/60 px-8 py-3 text-sm uppercase tracking-widest text-accent hover:bg-accent/10 transition"
+          >
+            Sobre o evento
+          </a>
+        </div>
+
+        <p className="mt-10 text-xs uppercase tracking-[0.3em] text-accent/80">
+          36 vagas · You Smile Fight · São Paulo
+        </p>
+      </div>
+    </header>
+  );
+}
+
+/* ---------------- MANIFESTO ---------------- */
+
+function Manifesto() {
+  return (
+    <section className="mx-auto max-w-3xl px-6 py-20 text-center">
+      <p className="italic-serif text-2xl md:text-3xl leading-snug text-foreground">
+        Aqui ninguém precisa se provar pra pertencer.<br />
+        A atividade é o pretexto. A força coletiva é o produto.
+      </p>
+      <div className="mt-8 mx-auto h-px w-24 bg-accent/60" />
+    </section>
+  );
+}
+
+/* ---------------- EVENT INFO ---------------- */
+
+function EventInfo() {
+  return (
+    <section id="info" className="bg-primary text-primary-foreground">
+      <div className="mx-auto max-w-5xl grid md:grid-cols-3 gap-8 px-6 py-16">
+        <InfoBlock label="Data" value="24 de Julho" />
+        <InfoBlock label="Aulas" value="11h ou 12h" />
+        <InfoBlock
+          label="Local"
+          value="You Smile Fight"
+          href="https://www.instagram.com/yousmilefight?igsh=MWR4Njl3NWJ6MXBhZg=="
+        />
+      </div>
+    </section>
+  );
+}
+
+function InfoBlock({ label, value, href }: { label: string; value: string; href?: string }) {
+  const content = (
+    <>
+      <p className="text-xs uppercase tracking-[0.3em] text-accent">{label}</p>
+      <p className="mt-3 font-display text-3xl md:text-4xl">{value}</p>
+    </>
+  );
+  return (
+    <div className="text-center">
+      {href ? (
+        <a href={href} target="_blank" rel="noopener noreferrer" className="hover:opacity-90">
+          {content}
+          <span className="mt-2 inline-block text-[10px] uppercase tracking-widest text-accent/80">
+            @yousmilefight ↗
+          </span>
+        </a>
+      ) : (
+        content
+      )}
+    </div>
+  );
+}
+
+/* ---------------- LOTS ---------------- */
+
+function Lots({ onSelect }: { onSelect: (lot: Lot, type: TicketType) => void }) {
+  return (
+    <section id="lotes" className="mx-auto max-w-6xl px-6 py-20">
+      <div className="text-center mb-14">
+        <p className="italic-serif text-accent uppercase tracking-widest text-xs">
+          Ingressos
+        </p>
+        <h2 className="mt-2 font-display text-4xl md:text-5xl">Escolha seu lote</h2>
+        <p className="mt-4 text-sm text-muted-foreground max-w-xl mx-auto">
+          Individual ou em dupla — venha com uma amiga e pague menos. Vagas limitadas por lote.
+        </p>
+      </div>
+
+      <div className="grid md:grid-cols-3 gap-6">
+        {LOTS.map((lot) => (
+          <LotCard key={lot.id} lot={lot} onSelect={onSelect} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function LotCard({ lot, onSelect }: { lot: Lot; onSelect: (lot: Lot, type: TicketType) => void }) {
+  return (
+    <article className="relative rounded-lg border border-accent/30 bg-card p-8 shadow-sm hover:shadow-md transition">
+      <div className="absolute -top-3 left-6 bg-primary text-primary-foreground px-3 py-1 text-[10px] uppercase tracking-widest">
+        {lot.label}
+      </div>
+      <p className="mt-2 text-xs uppercase tracking-widest text-muted-foreground">
+        {lot.total} vagas
+      </p>
+
+      <div className="mt-6 space-y-4">
+        <PriceRow
+          title="Individual"
+          price={formatBRL(lot.individual)}
+          onClick={() => onSelect(lot, "individual")}
+        />
+        <PriceRow
+          title="Dupla"
+          subtitle="cada"
+          price={formatBRL(lot.dupla)}
+          highlight
+          onClick={() => onSelect(lot, "dupla")}
+        />
+      </div>
+    </article>
+  );
+}
+
+function PriceRow({
+  title,
+  subtitle,
+  price,
+  highlight,
+  onClick,
+}: {
+  title: string;
+  subtitle?: string;
+  price: string;
+  highlight?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`w-full text-left rounded-md border p-4 flex items-center justify-between transition ${
+        highlight
+          ? "border-accent bg-accent/10 hover:bg-accent/20"
+          : "border-border hover:border-accent"
+      }`}
+    >
+      <div>
+        <p className="font-display text-lg">{title}</p>
+        {subtitle && (
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+            {subtitle}
+          </p>
+        )}
+      </div>
+      <div className="text-right">
+        <p className="font-display text-2xl text-primary">{price}</p>
+        <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+          inscrever →
+        </p>
+      </div>
+    </button>
+  );
+}
+
+/* ---------------- FOOTER ---------------- */
+
+function Footer() {
+  return (
+    <footer className="bg-primary text-primary-foreground/80 py-10 text-center">
+      <p className="italic-serif text-accent text-sm">"Mulher com tribo chega mais longe."</p>
+      <p className="mt-4 text-xs uppercase tracking-widest">WHF · São Paulo</p>
+    </footer>
+  );
+}
+
+/* ---------------- REGISTRATION DIALOG ---------------- */
+
+interface FormState {
+  fullName: string;
+  cpf: string;
+  address: string;
+  phone: string;
+  email: string;
+  acceptMessages: boolean;
+  classTime: string;
+  partnerFullName: string;
+  partnerCpf: string;
+  partnerEmail: string;
+  partnerPhone: string;
+  parq: (boolean | null)[];
+  parqNotes: string;
+  suggestions: string;
+}
+
+const initialForm: FormState = {
+  fullName: "",
+  cpf: "",
+  address: "",
+  phone: "",
+  email: "",
+  acceptMessages: false,
+  classTime: "",
+  partnerFullName: "",
+  partnerCpf: "",
+  partnerEmail: "",
+  partnerPhone: "",
+  parq: Array(7).fill(null),
+  parqNotes: "",
+  suggestions: "",
+};
+
+function RegistrationDialog({
+  selection,
+  onClose,
+}: {
+  selection: Selection;
+  onClose: () => void;
+}) {
+  const { lot, type } = selection;
+  const [form, setForm] = useState<FormState>(initialForm);
+  const [submitting, setSubmitting] = useState(false);
+
+  const paymentUrl = useMemo(() => PAYMENT_URLS[lot.id][type], [lot, type]);
+  const price = type === "individual" ? lot.individual : lot.dupla;
+  const isDupla = type === "dupla";
+
+  function update<K extends keyof FormState>(k: K, v: FormState[K]) {
+    setForm((f) => ({ ...f, [k]: v }));
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+
+    // Validações
+    if (form.fullName.trim().length < 2) return toast.error("Informe seu nome completo.");
+    if (!isValidCPF(form.cpf)) return toast.error("CPF inválido.");
+    if (form.address.trim().length < 5) return toast.error("Informe seu endereço completo.");
+    if (!isValidMobileBR(form.phone))
+      return toast.error("Telefone móvel inválido. Use (DDD) 9XXXX-XXXX.");
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email))
+      return toast.error("E-mail inválido.");
+    if (!form.classTime) return toast.error("Escolha o horário da aula.");
+
+    if (isDupla) {
+      if (form.partnerFullName.trim().length < 2)
+        return toast.error("Informe o nome da sua dupla.");
+      if (!isValidCPF(form.partnerCpf)) return toast.error("CPF da dupla inválido.");
+      if (!isValidMobileBR(form.partnerPhone))
+        return toast.error("Telefone da dupla inválido.");
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.partnerEmail))
+        return toast.error("E-mail da dupla inválido.");
+    }
+
+    if (form.parq.some((v) => v === null))
+      return toast.error("Responda todas as perguntas do PAR-Q.");
+
+    setSubmitting(true);
+    const { error } = await supabase.from("registrations").insert({
+      full_name: form.fullName.trim(),
+      cpf: form.cpf,
+      email: form.email.trim(),
+      phone: form.phone,
+      address: form.address.trim(),
+      accept_messages: form.acceptMessages,
+      ticket_batch: lot.label,
+      ticket_type: type,
+      ticket_price_cents: price * 100,
+      class_time: form.classTime,
+      partner_full_name: isDupla ? form.partnerFullName.trim() : null,
+      partner_cpf: isDupla ? form.partnerCpf : null,
+      partner_email: isDupla ? form.partnerEmail.trim() : null,
+      partner_phone: isDupla ? form.partnerPhone : null,
+      parq_q1: form.parq[0]!,
+      parq_q2: form.parq[1]!,
+      parq_q3: form.parq[2]!,
+      parq_q4: form.parq[3]!,
+      parq_q5: form.parq[4]!,
+      parq_q6: form.parq[5]!,
+      parq_q7: form.parq[6]!,
+      parq_notes: form.parqNotes || null,
+      event_suggestions: form.suggestions || null,
+      payment_url: paymentUrl,
+    });
+    setSubmitting(false);
+
+    if (error) {
+      console.error(error);
+      toast.error("Não foi possível salvar sua inscrição. Tente novamente.");
+      return;
+    }
+
+    toast.success("Inscrição registrada! Redirecionando para o pagamento...");
+    setTimeout(() => {
+      window.location.href = paymentUrl;
+    }, 900);
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-primary/70 backdrop-blur-sm p-4 md:p-8">
+      <div className="w-full max-w-2xl bg-background rounded-lg shadow-xl border border-accent/40">
+        <div className="sticky top-0 flex items-start justify-between gap-4 border-b border-border bg-background/95 backdrop-blur px-6 py-4 rounded-t-lg">
+          <div>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+              {lot.label} · {type === "individual" ? "Individual" : "Dupla"} · {formatBRL(price)}
+              {isDupla && " por pessoa"}
+            </p>
+            <h3 className="font-display text-2xl">Inscrição</h3>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Fechar"
+            className="text-muted-foreground hover:text-foreground text-2xl leading-none"
+          >
+            ×
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="px-6 py-6 space-y-8">
+          {/* Cadastro */}
+          <Section title="Seus dados">
+            <Field label="Nome completo">
+              <input
+                required
+                value={form.fullName}
+                onChange={(e) => update("fullName", e.target.value)}
+                className={inputCls}
+              />
+            </Field>
+            <div className="grid md:grid-cols-2 gap-4">
+              <Field label="CPF">
+                <input
+                  required
+                  inputMode="numeric"
+                  value={form.cpf}
+                  onChange={(e) => update("cpf", maskCPF(e.target.value))}
+                  placeholder="000.000.000-00"
+                  className={inputCls}
+                />
+              </Field>
+              <Field label="Telefone (celular)">
+                <input
+                  required
+                  inputMode="tel"
+                  value={form.phone}
+                  onChange={(e) => update("phone", maskPhone(e.target.value))}
+                  placeholder="(11) 91234-5678"
+                  className={inputCls}
+                />
+              </Field>
+            </div>
+            <Field label="E-mail">
+              <input
+                required
+                type="email"
+                value={form.email}
+                onChange={(e) => update("email", e.target.value)}
+                className={inputCls}
+              />
+            </Field>
+            <Field label="Endereço completo">
+              <input
+                required
+                value={form.address}
+                onChange={(e) => update("address", e.target.value)}
+                placeholder="Rua, número, bairro, cidade — SP"
+                className={inputCls}
+              />
+            </Field>
+
+            <Field label="Horário da aula">
+              <div className="flex gap-3">
+                {CLASS_TIMES.map((t) => (
+                  <label
+                    key={t}
+                    className={`flex-1 cursor-pointer text-center rounded-md border p-3 transition ${
+                      form.classTime === t
+                        ? "border-accent bg-accent/10"
+                        : "border-border hover:border-accent"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="classTime"
+                      value={t}
+                      checked={form.classTime === t}
+                      onChange={() => update("classTime", t)}
+                      className="sr-only"
+                    />
+                    <span className="font-display text-lg">{t}</span>
+                  </label>
+                ))}
+              </div>
+            </Field>
+
+            <label className="flex items-start gap-3 text-sm">
+              <input
+                type="checkbox"
+                checked={form.acceptMessages}
+                onChange={(e) => update("acceptMessages", e.target.checked)}
+                className="mt-1"
+              />
+              <span>
+                Aceito receber mensagens da WHF sobre este evento e próximas edições.
+              </span>
+            </label>
+          </Section>
+
+          {/* Dupla */}
+          {isDupla && (
+            <Section title="Dados da sua dupla">
+              <Field label="Nome completo">
+                <input
+                  required
+                  value={form.partnerFullName}
+                  onChange={(e) => update("partnerFullName", e.target.value)}
+                  className={inputCls}
+                />
+              </Field>
+              <div className="grid md:grid-cols-2 gap-4">
+                <Field label="CPF">
+                  <input
+                    required
+                    inputMode="numeric"
+                    value={form.partnerCpf}
+                    onChange={(e) => update("partnerCpf", maskCPF(e.target.value))}
+                    placeholder="000.000.000-00"
+                    className={inputCls}
+                  />
+                </Field>
+                <Field label="Telefone (celular)">
+                  <input
+                    required
+                    inputMode="tel"
+                    value={form.partnerPhone}
+                    onChange={(e) => update("partnerPhone", maskPhone(e.target.value))}
+                    placeholder="(11) 91234-5678"
+                    className={inputCls}
+                  />
+                </Field>
+              </div>
+              <Field label="E-mail">
+                <input
+                  required
+                  type="email"
+                  value={form.partnerEmail}
+                  onChange={(e) => update("partnerEmail", e.target.value)}
+                  className={inputCls}
+                />
+              </Field>
+            </Section>
+          )}
+
+          {/* PARQ */}
+          <Section title="Questionário PAR-Q">
+            <p className="text-xs text-muted-foreground -mt-2">
+              Responda com sinceridade. Em caso de qualquer "Sim", recomendamos consultar um
+              médico antes de participar.
+            </p>
+            <ol className="space-y-4 list-decimal pl-5">
+              {PARQ.map((q, i) => (
+                <li key={i} className="text-sm">
+                  <p>{q}</p>
+                  <div className="mt-2 flex gap-2">
+                    {["Sim", "Não"].map((label, idx) => {
+                      const val = idx === 0;
+                      const selected = form.parq[i] === val;
+                      return (
+                        <button
+                          type="button"
+                          key={label}
+                          onClick={() => {
+                            const arr = [...form.parq];
+                            arr[i] = val;
+                            update("parq", arr);
+                          }}
+                          className={`px-4 py-1.5 rounded-full text-xs uppercase tracking-widest border transition ${
+                            selected
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : "border-border hover:border-accent"
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </li>
+              ))}
+            </ol>
+            <Field label="Observações de saúde (opcional)">
+              <textarea
+                rows={2}
+                value={form.parqNotes}
+                onChange={(e) => update("parqNotes", e.target.value)}
+                className={inputCls}
+              />
+            </Field>
+          </Section>
+
+          {/* Suggestions */}
+          <Section title="Próximos eventos">
+            <Field label="Sugestões para próximas edições (opcional)">
+              <textarea
+                rows={3}
+                value={form.suggestions}
+                onChange={(e) => update("suggestions", e.target.value)}
+                placeholder="Do que você gostaria de participar?"
+                className={inputCls}
+              />
+            </Field>
+          </Section>
+
+          <div className="pt-2 flex flex-col sm:flex-row-reverse gap-3">
+            <button
+              type="submit"
+              disabled={submitting}
+              className="flex-1 rounded-full bg-primary text-primary-foreground px-6 py-3 text-sm uppercase tracking-widest font-semibold hover:opacity-90 disabled:opacity-60"
+            >
+              {submitting ? "Enviando..." : `Finalizar e pagar · ${formatBRL(price)}${isDupla ? " (por pessoa)" : ""}`}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-full border border-border px-6 py-3 text-sm uppercase tracking-widest hover:bg-secondary"
+            >
+              Cancelar
+            </button>
+          </div>
+          <p className="text-[11px] text-muted-foreground text-center">
+            Ao finalizar, você será direcionada para o pagamento seguro via InfinityPay.
+          </p>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- form primitives ---------------- */
+
+const inputCls =
+  "w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/40";
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <fieldset className="space-y-4">
+      <legend className="font-display text-xl text-primary">{title}</legend>
+      {children}
+    </fieldset>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="block">
+      <span className="block text-xs uppercase tracking-widest text-muted-foreground mb-1">
+        {label}
+      </span>
+      {children}
+    </label>
   );
 }
