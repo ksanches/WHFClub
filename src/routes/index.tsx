@@ -319,12 +319,16 @@ function RegistrationDialog({ selection, onClose }: { selection: Selection; onCl
     }
 
     if (paymentMethod === "cartao") {
-      toast.success("Inscrição registrada! Redirecionando para o pagamento...");
-      setTimeout(() => { window.location.href = paymentUrl; }, 900);
+      toast.success("Inscrição registrada! Finalize o pagamento.");
+      setCardConfirmation(true);
     } else {
       toast.success("Inscrição registrada! Confira os dados do Pix.");
       setPixConfirmation(true);
     }
+  }
+
+  if (cardConfirmation) {
+    return <CardScreen paymentUrl={paymentUrl} totalPrice={totalPrice} lotLabel={lot.label} typeLabel={isDupla ? "Dupla" : "Individual"} onClose={onClose} />;
   }
 
   if (pixConfirmation) {
