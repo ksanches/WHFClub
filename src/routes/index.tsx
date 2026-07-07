@@ -4,6 +4,7 @@ import { Toaster, toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import {
   CLASS_TIMES,
+  CLASS_CAPACITY,
   paymentUrlFor,
   formatBRL,
   formatCents,
