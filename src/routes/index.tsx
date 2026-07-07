@@ -18,6 +18,7 @@ import {
   type TicketType,
   type PaymentMethod,
 } from "@/lib/whf";
+import { getClassOccupancy } from "@/lib/occupancy.functions";
 
 
 export const Route = createFileRoute("/")({
@@ -46,12 +47,14 @@ function LandingPage() {
   const [occupancy, setOccupancy] = useState<Record<string, number>>({});
 
   async function loadOccupancy() {
-    const { data } = await supabase.rpc("get_class_occupancy");
-    const map: Record<string, number> = {};
-    ((data as { class_time: string; participants: number }[] | null) ?? []).forEach((r) => {
-      map[r.class_time] = r.participants;
-    });
-    setOccupancy(map);
+    try {
+      const rows = await getClassOccupancy();
+      const map: Record<string, number> = {};
+      rows.forEach((r) => { map[r.class_time] = r.participants; });
+      setOccupancy(map);
+    } catch (e) {
+      console.error("Failed to load class occupancy", e);
+    }
   }
 
   useEffect(() => {
