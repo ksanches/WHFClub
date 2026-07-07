@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Toaster, toast } from "sonner";
 import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
-import { formatCents } from "@/lib/whf";
+import { CLASS_TIMES, CLASS_CAPACITY, formatCents } from "@/lib/whf";
 
 
 export const Route = createFileRoute("/_authenticated/admin")({
