@@ -19,6 +19,10 @@ import {
   type PaymentMethod,
 } from "@/lib/whf";
 import { getClassOccupancy } from "@/lib/occupancy.functions";
+import pixIndividualAsset from "@/assets/pix_individual.jpeg.asset.json";
+import pixDuplaAsset from "@/assets/pix_Dupla.jpeg.asset.json";
+
+const WHATSAPP_URL = "https://wa.me/5511981625143";
 
 
 export const Route = createFileRoute("/")({
