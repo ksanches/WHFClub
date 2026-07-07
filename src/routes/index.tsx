@@ -12,9 +12,12 @@ import {
   maskPhone,
   isValidMobileBR,
   PARQ_QUESTIONS,
+  PIX_INFO,
   type Lot,
   type TicketType,
+  type PaymentMethod,
 } from "@/lib/whf";
+
 
 export const Route = createFileRoute("/")({
   component: LandingPage,
