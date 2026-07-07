@@ -96,6 +96,30 @@ function AdminPage() {
     }
   }
 
+  async function updateStatus(reg: Registration, status: RegStatus) {
+    const prev = reg.status;
+    setRegs((rs) => rs.map((r) => (r.id === reg.id ? { ...r, status } : r)));
+    const { error } = await supabase
+      .from("registrations")
+      .update({ status } as never)
+      .eq("id", reg.id);
+    if (error) {
+      setRegs((rs) => rs.map((r) => (r.id === reg.id ? { ...r, status: prev } : r)));
+      toast.error(error.message);
+    } else {
+      toast.success(`Status atualizado: ${STATUS_OPTIONS.find((o) => o.value === status)?.label}`);
+    }
+  }
+
+  async function deleteReg(reg: Registration) {
+    if (!confirm(`Excluir a inscrição de ${reg.full_name}? Essa ação não pode ser desfeita.`)) return;
+    const { error } = await supabase.from("registrations").delete().eq("id", reg.id);
+    if (error) return toast.error(error.message);
+    setRegs((rs) => rs.filter((r) => r.id !== reg.id));
+    if (openRegId === reg.id) setOpenRegId(null);
+    toast.success("Inscrição excluída");
+  }
+
   async function signOut() {
     await supabase.auth.signOut();
     navigate({ to: "/auth" });
