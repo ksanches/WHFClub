@@ -641,6 +641,7 @@ function CardScreen({ paymentUrl, totalPrice, lotLabel, typeLabel, onClose }: { 
   );
 }
 
+function PixRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between gap-4 px-4 py-3">
       <dt className="text-xs uppercase tracking-widest text-muted-foreground">{label}</dt>
