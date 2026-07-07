@@ -43,6 +43,16 @@ function LandingPage() {
   const [selection, setSelection] = useState<Selection | null>(null);
   const [lots, setLots] = useState<Lot[]>([]);
   const [loading, setLoading] = useState(true);
+  const [occupancy, setOccupancy] = useState<Record<string, number>>({});
+
+  async function loadOccupancy() {
+    const { data } = await supabase.rpc("get_class_occupancy");
+    const map: Record<string, number> = {};
+    ((data as { class_time: string; participants: number }[] | null) ?? []).forEach((r) => {
+      map[r.class_time] = r.participants;
+    });
+    setOccupancy(map);
+  }
 
   useEffect(() => {
     supabase
@@ -64,6 +74,7 @@ function LandingPage() {
         );
         setLoading(false);
       });
+    loadOccupancy();
   }, []);
 
   return (
@@ -75,7 +86,14 @@ function LandingPage() {
       <Lots lots={lots} loading={loading} onSelect={(lot, type) => setSelection({ lot, type })} />
       <Footer />
 
-      {selection && <RegistrationDialog selection={selection} onClose={() => setSelection(null)} />}
+      {selection && (
+        <RegistrationDialog
+          selection={selection}
+          occupancy={occupancy}
+          onClose={() => setSelection(null)}
+          onSubmitted={loadOccupancy}
+        />
+      )}
     </div>
   );
 }
