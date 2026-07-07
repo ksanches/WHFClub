@@ -173,7 +173,7 @@ function LotCard({ lot, onSelect }: { lot: Lot; onSelect: (lot: Lot, type: Ticke
   return (
     <article className="relative rounded-lg border border-accent/30 bg-card p-8 shadow-sm hover:shadow-md transition">
       <div className="absolute -top-3 left-6 bg-primary text-primary-foreground px-3 py-1 text-[10px] uppercase tracking-widest">{lot.label}</div>
-      <p className="mt-2 text-xs uppercase tracking-widest text-muted-foreground">{lot.total} vagas</p>
+      
       <div className="mt-6 space-y-4">
         <PriceRow title="Individual" price={formatBRL(lot.individual)} onClick={() => onSelect(lot, "individual")} />
         <PriceRow title="Dupla" subtitle="cada" price={formatBRL(lot.dupla)} highlight onClick={() => onSelect(lot, "dupla")} />
