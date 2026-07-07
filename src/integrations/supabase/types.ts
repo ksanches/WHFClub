@@ -83,6 +83,7 @@ export type Database = {
           partner_phone: string | null
           payment_url: string | null
           phone: string
+          status: Database["public"]["Enums"]["registration_status"]
           ticket_batch: string
           ticket_price_cents: number
           ticket_type: string
@@ -119,6 +120,7 @@ export type Database = {
           partner_phone?: string | null
           payment_url?: string | null
           phone: string
+          status?: Database["public"]["Enums"]["registration_status"]
           ticket_batch: string
           ticket_price_cents: number
           ticket_type: string
@@ -155,6 +157,7 @@ export type Database = {
           partner_phone?: string | null
           payment_url?: string | null
           phone?: string
+          status?: Database["public"]["Enums"]["registration_status"]
           ticket_batch?: string
           ticket_price_cents?: number
           ticket_type?: string
@@ -197,6 +200,11 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      registration_status:
+        | "pendente"
+        | "confirmado"
+        | "cancelado"
+        | "reembolsado"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -325,6 +333,12 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      registration_status: [
+        "pendente",
+        "confirmado",
+        "cancelado",
+        "reembolsado",
+      ],
     },
   },
 } as const

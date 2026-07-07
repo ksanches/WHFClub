@@ -20,6 +20,15 @@ interface Lot {
   sort_order: number;
 }
 
+type RegStatus = "pendente" | "confirmado" | "cancelado" | "reembolsado";
+
+const STATUS_OPTIONS: { value: RegStatus; label: string; className: string }[] = [
+  { value: "pendente", label: "Pendente", className: "bg-yellow-500/15 text-yellow-700 dark:text-yellow-300 border-yellow-500/30" },
+  { value: "confirmado", label: "Confirmado", className: "bg-green-500/15 text-green-700 dark:text-green-300 border-green-500/30" },
+  { value: "cancelado", label: "Cancelado", className: "bg-red-500/15 text-red-700 dark:text-red-300 border-red-500/30" },
+  { value: "reembolsado", label: "Reembolsado", className: "bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30" },
+];
+
 interface Registration {
   id: string;
   created_at: string;
@@ -31,6 +40,7 @@ interface Registration {
   ticket_type: string;
   ticket_price_cents: number;
   class_time: string;
+  status: RegStatus;
   partner_full_name: string | null;
   partner_email: string | null;
   partner_phone: string | null;
@@ -86,6 +96,30 @@ function AdminPage() {
     }
   }
 
+  async function updateStatus(reg: Registration, status: RegStatus) {
+    const prev = reg.status;
+    setRegs((rs) => rs.map((r) => (r.id === reg.id ? { ...r, status } : r)));
+    const { error } = await supabase
+      .from("registrations")
+      .update({ status } as never)
+      .eq("id", reg.id);
+    if (error) {
+      setRegs((rs) => rs.map((r) => (r.id === reg.id ? { ...r, status: prev } : r)));
+      toast.error(error.message);
+    } else {
+      toast.success(`Status atualizado: ${STATUS_OPTIONS.find((o) => o.value === status)?.label}`);
+    }
+  }
+
+  async function deleteReg(reg: Registration) {
+    if (!confirm(`Excluir a inscrição de ${reg.full_name}? Essa ação não pode ser desfeita.`)) return;
+    const { error } = await supabase.from("registrations").delete().eq("id", reg.id);
+    if (error) return toast.error(error.message);
+    setRegs((rs) => rs.filter((r) => r.id !== reg.id));
+    if (openRegId === reg.id) setOpenRegId(null);
+    toast.success("Inscrição excluída");
+  }
+
   async function signOut() {
     await supabase.auth.signOut();
     navigate({ to: "/auth" });
@@ -95,6 +129,7 @@ function AdminPage() {
     const yn = (v: boolean | null) => (v === null ? "" : v ? "SIM" : "não");
     return regs.map((r) => ({
       "Data": new Date(r.created_at).toLocaleString("pt-BR"),
+      "Status": STATUS_OPTIONS.find((o) => o.value === r.status)?.label ?? r.status,
       "Nome": r.full_name,
       "CPF": r.cpf,
       "E-mail": r.email,
@@ -254,6 +289,7 @@ function AdminPage() {
               <thead className="bg-secondary text-xs uppercase tracking-widest">
                 <tr>
                   <th className="text-left px-3 py-2">Data</th>
+                  <th className="text-left px-3 py-2">Status</th>
                   <th className="text-left px-3 py-2">Nome</th>
                   <th className="text-left px-3 py-2">Contato</th>
                   <th className="text-left px-3 py-2">Lote</th>
@@ -264,27 +300,49 @@ function AdminPage() {
                 </tr>
               </thead>
               <tbody>
-                {regs.map((r) => (
-                  <tr key={r.id} className="border-t border-border">
-                    <td className="px-3 py-2 text-xs">{new Date(r.created_at).toLocaleString("pt-BR")}</td>
-                    <td className="px-3 py-2">{r.full_name}</td>
-                    <td className="px-3 py-2 text-xs">
-                      <div>{r.email}</div>
-                      <div className="text-muted-foreground">{r.phone}</div>
-                    </td>
-                    <td className="px-3 py-2">{r.ticket_batch}</td>
-                    <td className="px-3 py-2">{r.ticket_type}</td>
-                    <td className="px-3 py-2">{r.class_time}</td>
-                    <td className="px-3 py-2 text-xs">{r.partner_full_name ?? "—"}</td>
-                    <td className="px-3 py-2">
-                      <button onClick={() => setOpenRegId(r.id)} className="text-xs uppercase tracking-widest text-primary hover:underline">
-                        Ver
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {regs.map((r) => {
+                  const opt = STATUS_OPTIONS.find((o) => o.value === r.status) ?? STATUS_OPTIONS[0];
+                  return (
+                    <tr key={r.id} className="border-t border-border">
+                      <td className="px-3 py-2 text-xs whitespace-nowrap">{new Date(r.created_at).toLocaleString("pt-BR")}</td>
+                      <td className="px-3 py-2">
+                        <select
+                          value={r.status}
+                          onChange={(e) => updateStatus(r, e.target.value as RegStatus)}
+                          className={`text-xs uppercase tracking-widest rounded-full border px-2 py-1 font-semibold outline-none focus:ring-2 focus:ring-accent/40 ${opt.className}`}
+                        >
+                          {STATUS_OPTIONS.map((o) => (
+                            <option key={o.value} value={o.value}>{o.label}</option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="px-3 py-2">{r.full_name}</td>
+                      <td className="px-3 py-2 text-xs">
+                        <div>{r.email}</div>
+                        <div className="text-muted-foreground">{r.phone}</div>
+                      </td>
+                      <td className="px-3 py-2">{r.ticket_batch}</td>
+                      <td className="px-3 py-2">{r.ticket_type}</td>
+                      <td className="px-3 py-2">{r.class_time}</td>
+                      <td className="px-3 py-2 text-xs">{r.partner_full_name ?? "—"}</td>
+                      <td className="px-3 py-2 whitespace-nowrap">
+                        <div className="flex items-center gap-3 justify-end">
+                          <button onClick={() => setOpenRegId(r.id)} className="text-xs uppercase tracking-widest text-primary hover:underline">
+                            Ver
+                          </button>
+                          <button
+                            onClick={() => deleteReg(r)}
+                            className="text-xs uppercase tracking-widest text-destructive hover:underline"
+                          >
+                            Excluir
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
                 {regs.length === 0 && (
-                  <tr><td colSpan={8} className="text-center py-8 text-muted-foreground text-sm">Nenhuma inscrição ainda.</td></tr>
+                  <tr><td colSpan={9} className="text-center py-8 text-muted-foreground text-sm">Nenhuma inscrição ainda.</td></tr>
                 )}
               </tbody>
             </table>
