@@ -267,6 +267,43 @@ function AdminPage() {
           </div>
         </section>
 
+        {/* Classes occupancy */}
+        <section>
+          <h2 className="font-display text-xl mb-4">Aulas</h2>
+          <div className="grid md:grid-cols-2 gap-4">
+            {CLASS_TIMES.map((t) => {
+              const active = regs.filter((r) => r.class_time === t && r.status !== "cancelado");
+              const seats = active.reduce((sum, r) => sum + (r.ticket_type === "dupla" ? 2 : 1), 0);
+              const confirmed = active
+                .filter((r) => r.status === "confirmado")
+                .reduce((sum, r) => sum + (r.ticket_type === "dupla" ? 2 : 1), 0);
+              const pending = seats - confirmed;
+              const pct = Math.min(100, Math.round((seats / CLASS_CAPACITY) * 100));
+              const full = seats >= CLASS_CAPACITY;
+              return (
+                <div key={t} className="rounded-lg border border-border p-5 bg-card">
+                  <div className="flex items-center justify-between">
+                    <p className="font-display text-2xl">{t}</p>
+                    <span className={`text-[10px] uppercase tracking-widest px-2 py-0.5 rounded ${full ? "bg-destructive text-destructive-foreground" : "bg-primary text-primary-foreground"}`}>
+                      {full ? "Lotada" : `${CLASS_CAPACITY - seats} vagas`}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-sm">
+                    <span className="font-semibold">{seats}</span>
+                    <span className="text-muted-foreground">/{CLASS_CAPACITY} participantes</span>
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {confirmed} confirmadas · {pending} pendentes
+                  </p>
+                  <div className="mt-3 h-2 w-full rounded-full bg-secondary overflow-hidden">
+                    <div className={`h-full ${full ? "bg-destructive" : "bg-primary"}`} style={{ width: `${pct}%` }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
         {/* Registrations */}
         <section>
           <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
