@@ -91,6 +91,86 @@ function AdminPage() {
     navigate({ to: "/auth" });
   }
 
+  function buildExportRows() {
+    const yn = (v: boolean | null) => (v === null ? "" : v ? "SIM" : "não");
+    return regs.map((r) => ({
+      "Data": new Date(r.created_at).toLocaleString("pt-BR"),
+      "Nome": r.full_name,
+      "CPF": r.cpf,
+      "E-mail": r.email,
+      "Telefone": r.phone,
+      "Endereço": r.address,
+      "Lote": r.ticket_batch,
+      "Tipo": r.ticket_type,
+      "Valor (R$)": (r.ticket_price_cents / 100).toFixed(2).replace(".", ","),
+      "Aula": r.class_time,
+      "PARQ 1 - Coração/supervisão": yn(r.parq_q1),
+      "PARQ 2 - Dor peito (ativ.)": yn(r.parq_q2),
+      "PARQ 3 - Dor peito (repouso)": yn(r.parq_q3),
+      "PARQ 4 - Tontura/desequilíbrio": yn(r.parq_q4),
+      "PARQ 5 - Problema ósseo/articular": yn(r.parq_q5),
+      "PARQ 6 - Medicamento coração/pressão": yn(r.parq_q6),
+      "PARQ 7 - Outra razão": yn(r.parq_q7),
+      "PARQ Observações": r.parq_notes ?? "",
+      "Dupla - Nome": r.partner_full_name ?? "",
+      "Dupla - CPF": (r as unknown as { partner_cpf?: string }).partner_cpf ?? "",
+      "Dupla - E-mail": r.partner_email ?? "",
+      "Dupla - Telefone": r.partner_phone ?? "",
+      "Dupla PARQ 1": yn(r.partner_parq_q1),
+      "Dupla PARQ 2": yn(r.partner_parq_q2),
+      "Dupla PARQ 3": yn(r.partner_parq_q3),
+      "Dupla PARQ 4": yn(r.partner_parq_q4),
+      "Dupla PARQ 5": yn(r.partner_parq_q5),
+      "Dupla PARQ 6": yn(r.partner_parq_q6),
+      "Dupla PARQ 7": yn(r.partner_parq_q7),
+      "Dupla PARQ Observações": r.partner_parq_notes ?? "",
+      "Sugestões de próximos eventos": r.event_suggestions ?? "",
+    }));
+  }
+
+  function downloadBlob(blob: Blob, filename: string) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function exportCSV() {
+    const rows = buildExportRows();
+    if (rows.length === 0) return toast.error("Nenhuma inscrição para exportar");
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const csv = XLSX.utils.sheet_to_csv(ws, { FS: ";" });
+    // BOM para Excel reconhecer UTF-8
+    const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
+    downloadBlob(blob, `inscricoes-whf-${stamp()}.csv`);
+    toast.success("CSV exportado");
+  }
+
+  function exportXLSX() {
+    const rows = buildExportRows();
+    if (rows.length === 0) return toast.error("Nenhuma inscrição para exportar");
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Inscrições");
+    const buf = XLSX.write(wb, { type: "array", bookType: "xlsx" });
+    downloadBlob(
+      new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }),
+      `inscricoes-whf-${stamp()}.xlsx`,
+    );
+    toast.success("Excel exportado");
+  }
+
+  function stamp() {
+    const d = new Date();
+    const p = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}`;
+  }
+
+
   if (isAdmin === null) {
     return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Carregando…</div>;
   }
