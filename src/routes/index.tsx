@@ -245,10 +245,13 @@ function RegistrationDialog({ selection, onClose }: { selection: Selection; onCl
   const { lot, type } = selection;
   const [form, setForm] = useState<FormState>(initialForm);
   const [submitting, setSubmitting] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cartao");
+  const [pixConfirmation, setPixConfirmation] = useState(false);
 
   const paymentUrl = useMemo(() => paymentUrlFor(lot.id, type), [lot, type]);
   const price = type === "individual" ? lot.individual : lot.dupla;
   const isDupla = type === "dupla";
+  const totalPrice = isDupla ? price * 2 : price;
 
   function update<K extends keyof FormState>(k: K, v: FormState[K]) {
     setForm((f) => ({ ...f, [k]: v }));
@@ -304,7 +307,7 @@ function RegistrationDialog({ selection, onClose }: { selection: Selection; onCl
       partner_parq_q7: isDupla ? form.partnerParq[6] : null,
       partner_parq_notes: isDupla ? (form.partnerParqNotes || null) : null,
       event_suggestions: form.suggestions || null,
-      payment_url: paymentUrl,
+      payment_url: paymentMethod === "cartao" ? paymentUrl : "pix",
     });
     setSubmitting(false);
 
@@ -314,9 +317,19 @@ function RegistrationDialog({ selection, onClose }: { selection: Selection; onCl
       return;
     }
 
-    toast.success("Inscrição registrada! Redirecionando para o pagamento...");
-    setTimeout(() => { window.location.href = paymentUrl; }, 900);
+    if (paymentMethod === "cartao") {
+      toast.success("Inscrição registrada! Redirecionando para o pagamento...");
+      setTimeout(() => { window.location.href = paymentUrl; }, 900);
+    } else {
+      toast.success("Inscrição registrada! Confira os dados do Pix.");
+      setPixConfirmation(true);
+    }
   }
+
+  if (pixConfirmation) {
+    return <PixScreen totalPrice={totalPrice} lotLabel={lot.label} typeLabel={isDupla ? "Dupla" : "Individual"} onClose={onClose} />;
+  }
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-primary/70 backdrop-blur-sm p-4 md:p-8">
