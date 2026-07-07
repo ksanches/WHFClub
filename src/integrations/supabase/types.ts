@@ -14,7 +14,93 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      registrations: {
+        Row: {
+          accept_messages: boolean
+          address: string
+          class_time: string
+          cpf: string
+          created_at: string
+          email: string
+          event_suggestions: string | null
+          full_name: string
+          id: string
+          parq_notes: string | null
+          parq_q1: boolean
+          parq_q2: boolean
+          parq_q3: boolean
+          parq_q4: boolean
+          parq_q5: boolean
+          parq_q6: boolean
+          parq_q7: boolean
+          partner_cpf: string | null
+          partner_email: string | null
+          partner_full_name: string | null
+          partner_phone: string | null
+          payment_url: string | null
+          phone: string
+          ticket_batch: string
+          ticket_price_cents: number
+          ticket_type: string
+        }
+        Insert: {
+          accept_messages?: boolean
+          address: string
+          class_time: string
+          cpf: string
+          created_at?: string
+          email: string
+          event_suggestions?: string | null
+          full_name: string
+          id?: string
+          parq_notes?: string | null
+          parq_q1: boolean
+          parq_q2: boolean
+          parq_q3: boolean
+          parq_q4: boolean
+          parq_q5: boolean
+          parq_q6: boolean
+          parq_q7: boolean
+          partner_cpf?: string | null
+          partner_email?: string | null
+          partner_full_name?: string | null
+          partner_phone?: string | null
+          payment_url?: string | null
+          phone: string
+          ticket_batch: string
+          ticket_price_cents: number
+          ticket_type: string
+        }
+        Update: {
+          accept_messages?: boolean
+          address?: string
+          class_time?: string
+          cpf?: string
+          created_at?: string
+          email?: string
+          event_suggestions?: string | null
+          full_name?: string
+          id?: string
+          parq_notes?: string | null
+          parq_q1?: boolean
+          parq_q2?: boolean
+          parq_q3?: boolean
+          parq_q4?: boolean
+          parq_q5?: boolean
+          parq_q6?: boolean
+          parq_q7?: boolean
+          partner_cpf?: string | null
+          partner_email?: string | null
+          partner_full_name?: string | null
+          partner_phone?: string | null
+          payment_url?: string | null
+          phone?: string
+          ticket_batch?: string
+          ticket_price_cents?: number
+          ticket_type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
