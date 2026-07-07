@@ -13,7 +13,7 @@ import {
   maskPhone,
   isValidMobileBR,
   PARQ_QUESTIONS,
-  PARQ_QUESTIONS as _PARQ_UNUSED_MARKER_REMOVE, // placeholder to keep diff minimal
+  
   type Lot,
   type TicketType,
   type PaymentMethod,
