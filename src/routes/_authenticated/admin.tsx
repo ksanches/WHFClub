@@ -234,12 +234,21 @@ function AdminPage() {
 
         {/* Registrations */}
         <section>
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
             <h2 className="font-display text-xl">Inscrições ({regs.length})</h2>
-            <button onClick={loadRegs} className="text-xs uppercase tracking-widest text-muted-foreground hover:text-primary">
-              Atualizar
-            </button>
+            <div className="flex items-center gap-2">
+              <button onClick={exportCSV} className="rounded-full border border-border px-4 py-1.5 text-xs uppercase tracking-widest hover:bg-secondary">
+                Exportar CSV
+              </button>
+              <button onClick={exportXLSX} className="rounded-full bg-primary text-primary-foreground px-4 py-1.5 text-xs uppercase tracking-widest hover:opacity-90">
+                Exportar Excel
+              </button>
+              <button onClick={loadRegs} className="text-xs uppercase tracking-widest text-muted-foreground hover:text-primary">
+                Atualizar
+              </button>
+            </div>
           </div>
+
           <div className="overflow-x-auto rounded-lg border border-border">
             <table className="min-w-full text-sm">
               <thead className="bg-secondary text-xs uppercase tracking-widest">
