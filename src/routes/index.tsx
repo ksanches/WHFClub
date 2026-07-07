@@ -287,6 +287,9 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
     if (!isValidMobileBR(form.phone)) return toast.error("Telefone móvel inválido.");
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email)) return toast.error("E-mail inválido.");
     if (!form.classTime) return toast.error("Escolha o horário da aula.");
+    if ((occupancy[form.classTime] ?? 0) + seatsNeeded > CLASS_CAPACITY) {
+      return toast.error("Este horário acabou de lotar. Escolha outro.");
+    }
     if (form.parq.some((v) => v === null)) return toast.error("Responda todo o PAR-Q.");
 
     if (isDupla) {
