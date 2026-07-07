@@ -260,7 +260,7 @@ const initialForm: FormState = {
   suggestions: "",
 };
 
-function RegistrationDialog({ selection, onClose }: { selection: Selection; onClose: () => void }) {
+function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { selection: Selection; occupancy: Record<string, number>; onClose: () => void; onSubmitted: () => void }) {
   const { lot, type } = selection;
   const [form, setForm] = useState<FormState>(initialForm);
   const [submitting, setSubmitting] = useState(false);
@@ -272,6 +272,8 @@ function RegistrationDialog({ selection, onClose }: { selection: Selection; onCl
   const price = type === "individual" ? lot.individual : lot.dupla;
   const isDupla = type === "dupla";
   const totalPrice = isDupla ? price * 2 : price;
+  const seatsNeeded = isDupla ? 2 : 1;
+  const availableTimes = CLASS_TIMES.filter((t) => (occupancy[t] ?? 0) + seatsNeeded <= CLASS_CAPACITY);
 
   function update<K extends keyof FormState>(k: K, v: FormState[K]) {
     setForm((f) => ({ ...f, [k]: v }));
