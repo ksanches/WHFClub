@@ -264,23 +264,17 @@ function AdminPage() {
           <h2 className="font-display text-xl mb-4">Lotes</h2>
           <div className="grid md:grid-cols-3 gap-4">
             {lots.map((lot) => {
-              const sold = regs.filter((r) => r.ticket_batch === lot.label).length;
+              const sold = regs
+                .filter((r) => r.ticket_batch === lot.label && r.status !== "cancelado")
+                .reduce((sum, r) => sum + (r.ticket_type === "dupla" ? 2 : 1), 0);
               return (
-                <div key={lot.id} className="rounded-lg border border-border p-5 bg-card">
-                  <div className="flex items-center justify-between">
-                    <p className="font-display text-lg">{lot.label}</p>
-                    <span className={`text-[10px] uppercase tracking-widest px-2 py-0.5 rounded ${lot.active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-                      {lot.active ? "Ativo" : "Inativo"}
-                    </span>
-                  </div>
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    {sold}/{lot.total} vagas · {formatCents(lot.individual_price_cents)} indiv. · {formatCents(lot.dupla_price_cents)} dupla
-                  </p>
-                  <button onClick={() => toggleLot(lot)}
-                    className="mt-4 w-full rounded-full border border-border py-2 text-xs uppercase tracking-widest hover:bg-secondary">
-                    {lot.active ? "Desativar" : "Ativar"}
-                  </button>
-                </div>
+                <LotEditor
+                  key={lot.id}
+                  lot={lot}
+                  sold={sold}
+                  onToggle={() => toggleLot(lot)}
+                  onSave={(patch) => saveLot(lot.id, patch)}
+                />
               );
             })}
           </div>
