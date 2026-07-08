@@ -103,6 +103,17 @@ function AdminPage() {
     }
   }
 
+  async function saveLot(id: string, patch: Partial<Lot>) {
+    const { error } = await supabase.from("lots").update(patch).eq("id", id);
+    if (error) {
+      toast.error(error.message);
+      return false;
+    }
+    toast.success("Lote atualizado");
+    await loadLots();
+    return true;
+  }
+
   async function updateStatus(reg: Registration, status: RegStatus) {
     const prev = reg.status;
     setRegs((rs) => rs.map((r) => (r.id === reg.id ? { ...r, status } : r)));
@@ -253,23 +264,17 @@ function AdminPage() {
           <h2 className="font-display text-xl mb-4">Lotes</h2>
           <div className="grid md:grid-cols-3 gap-4">
             {lots.map((lot) => {
-              const sold = regs.filter((r) => r.ticket_batch === lot.label).length;
+              const sold = regs
+                .filter((r) => r.ticket_batch === lot.label && r.status !== "cancelado")
+                .reduce((sum, r) => sum + (r.ticket_type === "dupla" ? 2 : 1), 0);
               return (
-                <div key={lot.id} className="rounded-lg border border-border p-5 bg-card">
-                  <div className="flex items-center justify-between">
-                    <p className="font-display text-lg">{lot.label}</p>
-                    <span className={`text-[10px] uppercase tracking-widest px-2 py-0.5 rounded ${lot.active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-                      {lot.active ? "Ativo" : "Inativo"}
-                    </span>
-                  </div>
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    {sold}/{lot.total} vagas · {formatCents(lot.individual_price_cents)} indiv. · {formatCents(lot.dupla_price_cents)} dupla
-                  </p>
-                  <button onClick={() => toggleLot(lot)}
-                    className="mt-4 w-full rounded-full border border-border py-2 text-xs uppercase tracking-widest hover:bg-secondary">
-                    {lot.active ? "Desativar" : "Ativar"}
-                  </button>
-                </div>
+                <LotEditor
+                  key={lot.id}
+                  lot={lot}
+                  sold={sold}
+                  onToggle={() => toggleLot(lot)}
+                  onSave={(patch) => saveLot(lot.id, patch)}
+                />
               );
             })}
           </div>
@@ -474,6 +479,155 @@ function Block({ title, children }: { title: string; children: React.ReactNode }
     <div className="mt-5 text-sm">
       <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">{title}</p>
       {children}
+    </div>
+  );
+}
+
+function LotEditor({
+  lot,
+  sold,
+  onToggle,
+  onSave,
+}: {
+  lot: Lot;
+  sold: number;
+  onToggle: () => void;
+  onSave: (patch: Partial<Lot>) => Promise<boolean>;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [label, setLabel] = useState(lot.label);
+  const [total, setTotal] = useState(lot.total);
+  const [individual, setIndividual] = useState((lot.individual_price_cents / 100).toFixed(2));
+  const [dupla, setDupla] = useState((lot.dupla_price_cents / 100).toFixed(2));
+  const [sortOrder, setSortOrder] = useState(lot.sort_order);
+  const [saving, setSaving] = useState(false);
+
+  function reset() {
+    setLabel(lot.label);
+    setTotal(lot.total);
+    setIndividual((lot.individual_price_cents / 100).toFixed(2));
+    setDupla((lot.dupla_price_cents / 100).toFixed(2));
+    setSortOrder(lot.sort_order);
+  }
+
+  async function handleSave() {
+    const ind = Math.round(parseFloat(individual.replace(",", ".")) * 100);
+    const dup = Math.round(parseFloat(dupla.replace(",", ".")) * 100);
+    if (!label.trim() || !Number.isFinite(total) || total < 0 || !Number.isFinite(ind) || !Number.isFinite(dup)) {
+      toast.error("Preencha os campos corretamente");
+      return;
+    }
+    setSaving(true);
+    const ok = await onSave({
+      label: label.trim(),
+      total,
+      individual_price_cents: ind,
+      dupla_price_cents: dup,
+      sort_order: sortOrder,
+    });
+    setSaving(false);
+    if (ok) setEditing(false);
+  }
+
+  if (!editing) {
+    return (
+      <div className="rounded-lg border border-border p-5 bg-card">
+        <div className="flex items-center justify-between">
+          <p className="font-display text-lg">{lot.label}</p>
+          <span className={`text-[10px] uppercase tracking-widest px-2 py-0.5 rounded ${lot.active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+            {lot.active ? "Ativo" : "Inativo"}
+          </span>
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          {sold}/{lot.total} vagas · {formatCents(lot.individual_price_cents)} indiv. · {formatCents(lot.dupla_price_cents)} dupla
+        </p>
+        <p className="mt-1 text-[10px] uppercase tracking-widest text-muted-foreground">Ordem: {lot.sort_order}</p>
+        <div className="mt-4 flex gap-2">
+          <button
+            onClick={onToggle}
+            className="flex-1 rounded-full border border-border py-2 text-xs uppercase tracking-widest hover:bg-secondary"
+          >
+            {lot.active ? "Desativar" : "Ativar"}
+          </button>
+          <button
+            onClick={() => { reset(); setEditing(true); }}
+            className="flex-1 rounded-full bg-primary text-primary-foreground py-2 text-xs uppercase tracking-widest hover:opacity-90"
+          >
+            Editar
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-lg border border-border p-5 bg-card space-y-3">
+      <label className="block text-xs uppercase tracking-widest text-muted-foreground">
+        Nome
+        <input
+          value={label}
+          onChange={(e) => setLabel(e.target.value)}
+          className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm normal-case tracking-normal"
+        />
+      </label>
+      <div className="grid grid-cols-2 gap-2">
+        <label className="block text-xs uppercase tracking-widest text-muted-foreground">
+          Vagas totais
+          <input
+            type="number"
+            min={0}
+            value={total}
+            onChange={(e) => setTotal(parseInt(e.target.value || "0", 10))}
+            className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+          />
+        </label>
+        <label className="block text-xs uppercase tracking-widest text-muted-foreground">
+          Ordem
+          <input
+            type="number"
+            min={0}
+            value={sortOrder}
+            onChange={(e) => setSortOrder(parseInt(e.target.value || "0", 10))}
+            className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+          />
+        </label>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <label className="block text-xs uppercase tracking-widest text-muted-foreground">
+          Individual (R$)
+          <input
+            inputMode="decimal"
+            value={individual}
+            onChange={(e) => setIndividual(e.target.value)}
+            className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+          />
+        </label>
+        <label className="block text-xs uppercase tracking-widest text-muted-foreground">
+          Dupla p/ pessoa (R$)
+          <input
+            inputMode="decimal"
+            value={dupla}
+            onChange={(e) => setDupla(e.target.value)}
+            className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+          />
+        </label>
+      </div>
+      <div className="flex gap-2 pt-1">
+        <button
+          onClick={() => setEditing(false)}
+          disabled={saving}
+          className="flex-1 rounded-full border border-border py-2 text-xs uppercase tracking-widest hover:bg-secondary disabled:opacity-50"
+        >
+          Cancelar
+        </button>
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="flex-1 rounded-full bg-primary text-primary-foreground py-2 text-xs uppercase tracking-widest hover:opacity-90 disabled:opacity-50"
+        >
+          {saving ? "Salvando…" : "Salvar"}
+        </button>
+      </div>
     </div>
   );
 }
