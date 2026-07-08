@@ -29,6 +29,12 @@ const STATUS_OPTIONS: { value: RegStatus; label: string; className: string }[] =
   { value: "reembolsado", label: "Reembolsado", className: "bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30" },
 ];
 
+function formatPaymentMethod(method: string | null) {
+  if (method === "pix") return "Pix";
+  if (method === "cartao") return "Cartão";
+  return "—";
+}
+
 interface Registration {
   id: string;
   created_at: string;
