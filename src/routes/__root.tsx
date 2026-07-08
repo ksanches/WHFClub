@@ -75,22 +75,22 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "WANNA HAVE FUN — Evento fitness feminino · 24/07 · You Smile Fight" },
+      { title: "WANNA HAVE FUN — Evento fitness feminino · 25/07 · You Smile Fight" },
       {
         name: "description",
         content:
-          "Inscreva-se no evento WHF: 24/07, aulas às 11h ou 12h no You Smile Fight. Ingresso individual ou em dupla. Vagas limitadas.",
+          "Inscreva-se no evento WHF: 25/07, aulas às 11h ou 12h no You Smile Fight. Ingresso individual ou em dupla. Vagas limitadas.",
       },
       { name: "author", content: "WHF Club" },
-      { property: "og:title", content: "WANNA HAVE FUN — Evento fitness feminino · 24/07 · You Smile Fight" },
+      { property: "og:title", content: "WANNA HAVE FUN — Evento fitness feminino · 25/07 · You Smile Fight" },
       {
         property: "og:description",
-        content: "Inscreva-se no evento WHF: 24/07, aulas às 11h ou 12h no You Smile Fight. Ingresso individual ou em dupla. Vagas limitadas.",
+        content: "Inscreva-se no evento WHF: 25/07, aulas às 11h ou 12h no You Smile Fight. Ingresso individual ou em dupla. Vagas limitadas.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "WANNA HAVE FUN — Evento fitness feminino · 24/07 · You Smile Fight" },
-      { name: "twitter:description", content: "Inscreva-se no evento WHF: 24/07, aulas às 11h ou 12h no You Smile Fight. Ingresso individual ou em dupla. Vagas limitadas." },
+      { name: "twitter:title", content: "WANNA HAVE FUN — Evento fitness feminino · 25/07 · You Smile Fight" },
+      { name: "twitter:description", content: "Inscreva-se no evento WHF: 25/07, aulas às 11h ou 12h no You Smile Fight. Ingresso individual ou em dupla. Vagas limitadas." },
       { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/c6f58525-21f5-4f82-b53f-01936543303a/id-preview-b685267f--d84a142f-9749-452b-8844-dca267b842ae.lovable.app-1783451960445.png" },
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/c6f58525-21f5-4f82-b53f-01936543303a/id-preview-b685267f--d84a142f-9749-452b-8844-dca267b842ae.lovable.app-1783451960445.png" },
     ],
