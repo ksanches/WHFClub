@@ -339,6 +339,7 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
       partner_parq_q7: isDupla ? form.partnerParq[6] : null,
       partner_parq_notes: isDupla ? (form.partnerParqNotes || null) : null,
       event_suggestions: form.suggestions || null,
+      payment_method: paymentMethod,
       payment_url: paymentMethod === "cartao" ? paymentUrl : "pix",
     });
     setSubmitting(false);

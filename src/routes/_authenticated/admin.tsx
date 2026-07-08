@@ -138,6 +138,7 @@ function AdminPage() {
       "Lote": r.ticket_batch,
       "Tipo": r.ticket_type,
       "Valor (R$)": (r.ticket_price_cents / 100).toFixed(2).replace(".", ","),
+      "Forma de pagamento": r.payment_method === "pix" ? "Pix" : r.payment_method === "cartao" ? "Cartão" : r.payment_method ?? "—",
       "Aula": r.class_time,
       "PARQ 1 - Coração/supervisão": yn(r.parq_q1),
       "PARQ 2 - Dor peito (ativ.)": yn(r.parq_q2),
