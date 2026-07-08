@@ -40,6 +40,7 @@ interface Registration {
   ticket_type: string;
   ticket_price_cents: number;
   class_time: string;
+  payment_method: string | null;
   status: RegStatus;
   partner_full_name: string | null;
   partner_email: string | null;
