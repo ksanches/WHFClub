@@ -29,6 +29,12 @@ const STATUS_OPTIONS: { value: RegStatus; label: string; className: string }[] =
   { value: "reembolsado", label: "Reembolsado", className: "bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30" },
 ];
 
+function formatPaymentMethod(method: string | null) {
+  if (method === "pix") return "Pix";
+  if (method === "cartao") return "Cartão";
+  return "—";
+}
+
 interface Registration {
   id: string;
   created_at: string;
@@ -40,6 +46,7 @@ interface Registration {
   ticket_type: string;
   ticket_price_cents: number;
   class_time: string;
+  payment_method: string | null;
   status: RegStatus;
   partner_full_name: string | null;
   partner_email: string | null;
@@ -138,6 +145,7 @@ function AdminPage() {
       "Lote": r.ticket_batch,
       "Tipo": r.ticket_type,
       "Valor (R$)": (r.ticket_price_cents / 100).toFixed(2).replace(".", ","),
+      "Forma de pagamento": r.payment_method === "pix" ? "Pix" : r.payment_method === "cartao" ? "Cartão" : r.payment_method ?? "—",
       "Aula": r.class_time,
       "PARQ 1 - Coração/supervisão": yn(r.parq_q1),
       "PARQ 2 - Dor peito (ativ.)": yn(r.parq_q2),
@@ -332,6 +340,7 @@ function AdminPage() {
                   <th className="text-left px-3 py-2">Lote</th>
                   <th className="text-left px-3 py-2">Tipo</th>
                   <th className="text-left px-3 py-2">Aula</th>
+                  <th className="text-left px-3 py-2">Pagamento</th>
                   <th className="text-left px-3 py-2">Dupla</th>
                   <th className="px-3 py-2"></th>
                 </tr>
@@ -361,6 +370,7 @@ function AdminPage() {
                       <td className="px-3 py-2">{r.ticket_batch}</td>
                       <td className="px-3 py-2">{r.ticket_type}</td>
                       <td className="px-3 py-2">{r.class_time}</td>
+                      <td className="px-3 py-2">{formatPaymentMethod(r.payment_method)}</td>
                       <td className="px-3 py-2 text-xs">{r.partner_full_name ?? "—"}</td>
                       <td className="px-3 py-2 whitespace-nowrap">
                         <div className="flex items-center gap-3 justify-end">
@@ -379,7 +389,7 @@ function AdminPage() {
                   );
                 })}
                 {regs.length === 0 && (
-                  <tr><td colSpan={9} className="text-center py-8 text-muted-foreground text-sm">Nenhuma inscrição ainda.</td></tr>
+                  <tr><td colSpan={10} className="text-center py-8 text-muted-foreground text-sm">Nenhuma inscrição ainda.</td></tr>
                 )}
               </tbody>
             </table>
@@ -406,7 +416,7 @@ function RegistrationDetail({ reg, onClose }: { reg: Registration; onClose: () =
           <button onClick={onClose} className="text-2xl leading-none">×</button>
         </div>
         <p className="text-xs uppercase tracking-widest text-muted-foreground">
-          {reg.ticket_batch} · {reg.ticket_type} · {formatCents(reg.ticket_price_cents)} · aula {reg.class_time}
+          {reg.ticket_batch} · {reg.ticket_type} · {formatCents(reg.ticket_price_cents)} · {formatPaymentMethod(reg.payment_method)} · aula {reg.class_time}
         </p>
 
         <Block title="Contato">
