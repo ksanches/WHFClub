@@ -103,6 +103,17 @@ function AdminPage() {
     }
   }
 
+  async function saveLot(id: string, patch: Partial<Lot>) {
+    const { error } = await supabase.from("lots").update(patch).eq("id", id);
+    if (error) {
+      toast.error(error.message);
+      return false;
+    }
+    toast.success("Lote atualizado");
+    await loadLots();
+    return true;
+  }
+
   async function updateStatus(reg: Registration, status: RegStatus) {
     const prev = reg.status;
     setRegs((rs) => rs.map((r) => (r.id === reg.id ? { ...r, status } : r)));
