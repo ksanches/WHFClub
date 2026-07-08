@@ -259,6 +259,9 @@ function AdminPage() {
       </header>
 
       <main className="mx-auto max-w-6xl px-6 py-8 space-y-10">
+        {/* Financeiro */}
+        <FinancePanel regs={regs} />
+
         {/* Lots */}
         <section>
           <h2 className="font-display text-xl mb-4">Lotes</h2>
