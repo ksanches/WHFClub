@@ -113,7 +113,7 @@ function Hero({ onPickLot }: { onPickLot: () => void }) {
       }} />
       <div className="relative mx-auto max-w-5xl px-6 pt-16 pb-20 md:pt-24 md:pb-28 text-center">
         <div className="mx-auto mb-8 wax-seal">WHF</div>
-        <p className="italic-serif text-accent tracking-widest text-xs md:text-sm uppercase">Save the date · 24.07</p>
+        <p className="italic-serif text-accent tracking-widest text-xs md:text-sm uppercase">Save the date · 25.07</p>
         <h1 className="mt-4 font-display text-5xl md:text-7xl leading-none">WANNA<br />HAVE FUN.</h1>
         <p className="italic-serif mt-6 text-lg md:text-2xl text-accent">"Treinar é o plano. Se divertir é a regra."</p>
         <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -146,7 +146,7 @@ function EventInfo() {
   return (
     <section id="info" className="bg-primary text-primary-foreground">
       <div className="mx-auto max-w-5xl grid md:grid-cols-3 gap-8 px-6 py-16">
-        <InfoBlock label="Data" value="24 de Julho" />
+        <InfoBlock label="Data" value="25 de Julho" />
         <InfoBlock label="Aulas" value="11h ou 12h" />
         <InfoBlock label="Local" value="You Smile Fight" href="https://www.instagram.com/yousmilefight?igsh=MWR4Njl3NWJ6MXBhZg==" />
       </div>
