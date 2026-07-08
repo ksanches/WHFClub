@@ -81,6 +81,7 @@ export type Database = {
           partner_parq_q6: boolean | null
           partner_parq_q7: boolean | null
           partner_phone: string | null
+          payment_method: string | null
           payment_url: string | null
           phone: string
           status: Database["public"]["Enums"]["registration_status"]
@@ -118,6 +119,7 @@ export type Database = {
           partner_parq_q6?: boolean | null
           partner_parq_q7?: boolean | null
           partner_phone?: string | null
+          payment_method?: string | null
           payment_url?: string | null
           phone: string
           status?: Database["public"]["Enums"]["registration_status"]
@@ -155,6 +157,7 @@ export type Database = {
           partner_parq_q6?: boolean | null
           partner_parq_q7?: boolean | null
           partner_phone?: string | null
+          payment_method?: string | null
           payment_url?: string | null
           phone?: string
           status?: Database["public"]["Enums"]["registration_status"]
