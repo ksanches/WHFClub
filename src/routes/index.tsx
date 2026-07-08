@@ -146,7 +146,7 @@ function EventInfo() {
   return (
     <section id="info" className="bg-primary text-primary-foreground">
       <div className="mx-auto max-w-5xl grid md:grid-cols-3 gap-8 px-6 py-16">
-        <InfoBlock label="Data" value="24 de Julho" />
+        <InfoBlock label="Data" value="25 de Julho" />
         <InfoBlock label="Aulas" value="11h ou 12h" />
         <InfoBlock label="Local" value="You Smile Fight" href="https://www.instagram.com/yousmilefight?igsh=MWR4Njl3NWJ6MXBhZg==" />
       </div>
