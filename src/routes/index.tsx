@@ -22,7 +22,7 @@ import { getClassOccupancy } from "@/lib/occupancy.functions";
 import pixIndividualAsset from "@/assets/pix_individual.jpeg.asset.json";
 import pixDuplaAsset from "@/assets/pix_Dupla.jpeg.asset.json";
 
-const WHATSAPP_URL = "https://wa.me/5511981625143";
+const WHATSAPP_URL = "https://wa.me/5511965008538";
 
 
 export const Route = createFileRoute("/")({
