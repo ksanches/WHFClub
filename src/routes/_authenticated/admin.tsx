@@ -259,6 +259,9 @@ function AdminPage() {
       </header>
 
       <main className="mx-auto max-w-6xl px-6 py-8 space-y-10">
+        {/* Financeiro */}
+        <FinancePanel regs={regs} />
+
         {/* Lots */}
         <section>
           <h2 className="font-display text-xl mb-4">Lotes</h2>
@@ -404,6 +407,63 @@ function AdminPage() {
 
       {openReg && <RegistrationDetail reg={openReg} onClose={() => setOpenRegId(null)} />}
     </div>
+  );
+}
+
+function FinancePanel({ regs }: { regs: Registration[] }) {
+  const confirmed = regs.filter((r) => r.status === "confirmado");
+  const individual = confirmed.filter((r) => r.ticket_type === "individual");
+  const dupla = confirmed.filter((r) => r.ticket_type === "dupla");
+
+  const totalIndividual = individual.reduce((s, r) => s + r.ticket_price_cents, 0);
+  const totalDupla = dupla.reduce((s, r) => s + r.ticket_price_cents, 0);
+  const total = totalIndividual + totalDupla;
+
+  const pixTotal = confirmed.filter((r) => r.payment_method === "pix").reduce((s, r) => s + r.ticket_price_cents, 0);
+  const cardTotal = confirmed.filter((r) => r.payment_method === "cartao").reduce((s, r) => s + r.ticket_price_cents, 0);
+
+  const participants = confirmed.reduce((s, r) => s + (r.ticket_type === "dupla" ? 2 : 1), 0);
+
+  return (
+    <section>
+      <h2 className="font-display text-xl mb-4">Financeiro</h2>
+      <div className="grid md:grid-cols-3 gap-4">
+        <div className="rounded-lg border border-border p-5 bg-card">
+          <p className="text-xs uppercase tracking-widest text-muted-foreground">Total arrecadado</p>
+          <p className="font-display text-3xl text-primary mt-1">{formatCents(total)}</p>
+          <p className="text-xs text-muted-foreground mt-2">
+            {confirmed.length} inscrições confirmadas · {participants} participantes
+          </p>
+        </div>
+        <div className="rounded-lg border border-border p-5 bg-card">
+          <p className="text-xs uppercase tracking-widest text-muted-foreground">Individual</p>
+          <p className="font-display text-2xl mt-1">{formatCents(totalIndividual)}</p>
+          <p className="text-xs text-muted-foreground mt-2">{individual.length} ingresso(s)</p>
+        </div>
+        <div className="rounded-lg border border-border p-5 bg-card">
+          <p className="text-xs uppercase tracking-widest text-muted-foreground">Dupla</p>
+          <p className="font-display text-2xl mt-1">{formatCents(totalDupla)}</p>
+          <p className="text-xs text-muted-foreground mt-2">{dupla.length} ingresso(s) · {dupla.length * 2} participantes</p>
+        </div>
+      </div>
+
+      <div className="grid md:grid-cols-3 gap-4 mt-4">
+        <div className="rounded-lg border border-border p-4 bg-card">
+          <p className="text-xs uppercase tracking-widest text-muted-foreground">Pix</p>
+          <p className="font-display text-xl mt-1">{formatCents(pixTotal)}</p>
+        </div>
+        <div className="rounded-lg border border-border p-4 bg-card">
+          <p className="text-xs uppercase tracking-widest text-muted-foreground">Cartão</p>
+          <p className="font-display text-xl mt-1">{formatCents(cardTotal)}</p>
+        </div>
+        <div className="rounded-lg border border-border p-4 bg-card">
+          <p className="text-xs uppercase tracking-widest text-muted-foreground">Ticket médio</p>
+          <p className="font-display text-xl mt-1">
+            {confirmed.length > 0 ? formatCents(Math.round(total / confirmed.length)) : formatCents(0)}
+          </p>
+        </div>
+      </div>
+    </section>
   );
 }
 
