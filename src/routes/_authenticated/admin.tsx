@@ -415,14 +415,18 @@ function FinancePanel({ regs }: { regs: Registration[] }) {
   const individual = confirmed.filter((r) => r.ticket_type === "individual");
   const dupla = confirmed.filter((r) => r.ticket_type === "dupla");
 
-  const totalIndividual = individual.reduce((s, r) => s + r.ticket_price_cents, 0);
-  const totalDupla = dupla.reduce((s, r) => s + r.ticket_price_cents, 0);
+  // Dupla: ticket_price_cents é por pessoa; o valor arrecadado é a soma dos dois ingressos.
+  const regTotal = (r: Registration) => r.ticket_price_cents * (r.ticket_type === "dupla" ? 2 : 1);
+
+  const totalIndividual = individual.reduce((s, r) => s + regTotal(r), 0);
+  const totalDupla = dupla.reduce((s, r) => s + regTotal(r), 0);
   const total = totalIndividual + totalDupla;
 
-  const pixTotal = confirmed.filter((r) => r.payment_method === "pix").reduce((s, r) => s + r.ticket_price_cents, 0);
-  const cardTotal = confirmed.filter((r) => r.payment_method === "cartao").reduce((s, r) => s + r.ticket_price_cents, 0);
+  const pixTotal = confirmed.filter((r) => r.payment_method === "pix").reduce((s, r) => s + regTotal(r), 0);
+  const cardTotal = confirmed.filter((r) => r.payment_method === "cartao").reduce((s, r) => s + regTotal(r), 0);
 
   const participants = confirmed.reduce((s, r) => s + (r.ticket_type === "dupla" ? 2 : 1), 0);
+
 
   return (
     <section>
@@ -459,8 +463,10 @@ function FinancePanel({ regs }: { regs: Registration[] }) {
         <div className="rounded-lg border border-border p-4 bg-card">
           <p className="text-xs uppercase tracking-widest text-muted-foreground">Ticket médio</p>
           <p className="font-display text-xl mt-1">
-            {confirmed.length > 0 ? formatCents(Math.round(total / confirmed.length)) : formatCents(0)}
+            {participants > 0 ? formatCents(Math.round(total / participants)) : formatCents(0)}
           </p>
+          <p className="text-xs text-muted-foreground mt-1">por participante</p>
+
         </div>
       </div>
     </section>
