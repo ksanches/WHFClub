@@ -463,8 +463,10 @@ function FinancePanel({ regs }: { regs: Registration[] }) {
         <div className="rounded-lg border border-border p-4 bg-card">
           <p className="text-xs uppercase tracking-widest text-muted-foreground">Ticket médio</p>
           <p className="font-display text-xl mt-1">
-            {confirmed.length > 0 ? formatCents(Math.round(total / confirmed.length)) : formatCents(0)}
+            {participants > 0 ? formatCents(Math.round(total / participants)) : formatCents(0)}
           </p>
+          <p className="text-xs text-muted-foreground mt-1">por participante</p>
+
         </div>
       </div>
     </section>
