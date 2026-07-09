@@ -415,14 +415,18 @@ function FinancePanel({ regs }: { regs: Registration[] }) {
   const individual = confirmed.filter((r) => r.ticket_type === "individual");
   const dupla = confirmed.filter((r) => r.ticket_type === "dupla");
 
-  const totalIndividual = individual.reduce((s, r) => s + r.ticket_price_cents, 0);
-  const totalDupla = dupla.reduce((s, r) => s + r.ticket_price_cents, 0);
+  // Dupla: ticket_price_cents é por pessoa; o valor arrecadado é a soma dos dois ingressos.
+  const regTotal = (r: Registration) => r.ticket_price_cents * (r.ticket_type === "dupla" ? 2 : 1);
+
+  const totalIndividual = individual.reduce((s, r) => s + regTotal(r), 0);
+  const totalDupla = dupla.reduce((s, r) => s + regTotal(r), 0);
   const total = totalIndividual + totalDupla;
 
-  const pixTotal = confirmed.filter((r) => r.payment_method === "pix").reduce((s, r) => s + r.ticket_price_cents, 0);
-  const cardTotal = confirmed.filter((r) => r.payment_method === "cartao").reduce((s, r) => s + r.ticket_price_cents, 0);
+  const pixTotal = confirmed.filter((r) => r.payment_method === "pix").reduce((s, r) => s + regTotal(r), 0);
+  const cardTotal = confirmed.filter((r) => r.payment_method === "cartao").reduce((s, r) => s + regTotal(r), 0);
 
   const participants = confirmed.reduce((s, r) => s + (r.ticket_type === "dupla" ? 2 : 1), 0);
+
 
   return (
     <section>
