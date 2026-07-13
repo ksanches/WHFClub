@@ -193,6 +193,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      force_rotate_lot_on_schedule: { Args: never; Returns: undefined }
       get_class_occupancy: {
         Args: never
         Returns: {

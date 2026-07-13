@@ -1,7 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Toaster, toast } from "sonner";
+import { Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
@@ -13,6 +15,8 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -57,10 +61,18 @@ function AuthPage() {
           </label>
           <label className="block">
             <span className="block text-xs uppercase tracking-widest text-muted-foreground mb-1">Senha</span>
-            <input type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:border-accent" />
+            <div className="relative">
+              <input type={showPassword ? "text" : "password"} required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)}
+                className="w-full rounded-md border border-input bg-background pl-3 pr-10 py-2 text-sm outline-none focus:border-accent" />
+              <button type="button" onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground">
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </label>
         </div>
+
 
         <button type="submit" disabled={loading}
           className="mt-6 w-full rounded-full bg-primary text-primary-foreground py-3 text-sm uppercase tracking-widest font-semibold disabled:opacity-60">
