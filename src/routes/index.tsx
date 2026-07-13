@@ -586,8 +586,15 @@ function PixScreen({ totalPrice, lotLabel, typeLabel, onClose }: { totalPrice: n
 
         <div className="px-6 py-6 space-y-5">
           <p className="text-sm text-muted-foreground">
-            Sua inscrição foi registrada. Escaneie o QR Code abaixo no app do seu banco para pagar <span className="text-foreground font-semibold">{formatBRL(totalPrice)}</span>.
+            Sua inscrição foi registrada. Siga os passos abaixo para pagar <span className="text-foreground font-semibold">{formatBRL(totalPrice)}</span>:
           </p>
+
+          <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
+            <li>Abra o aplicativo do seu banco.</li>
+            <li>Escolha a opção <span className="text-foreground font-medium">Pagamento Pix via QR Code</span>.</li>
+            <li>Escaneie o QR Code abaixo e confirme o pagamento.</li>
+            <li>Envie o comprovante pelo WhatsApp para confirmarmos sua inscrição.</li>
+          </ol>
 
           <div className="rounded-md border border-border bg-white p-3 flex items-center justify-center">
             <img
@@ -596,6 +603,7 @@ function PixScreen({ totalPrice, lotLabel, typeLabel, onClose }: { totalPrice: n
               className="w-full max-w-xs h-auto"
             />
           </div>
+
 
           <p className="text-xs text-center text-muted-foreground">
             Beneficiário: <span className="text-foreground font-medium">LAIZZA AMANDA VIEGER SALES</span>
