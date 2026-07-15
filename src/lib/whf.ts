@@ -19,7 +19,10 @@ export const PAYMENT_URLS: Record<string, Record<TicketType, string>> = {
     individual: "https://link.infinitepay.io/laizza-amanda/VC1D-Q1YFRZjgS3-180,00",
     dupla: "https://link.infinitepay.io/laizza-amanda/VC1D-oUopqjjEBe-300,00",
   },
-  lote2: { individual: "#pagamento-lote2-individual", dupla: "#pagamento-lote2-dupla" },
+  lote2: {
+    individual: "https://link.infinitepay.io/laizza-amanda/VC1D-4MpzTmn3ZF-200,00",
+    dupla: "https://link.infinitepay.io/laizza-amanda/VC1D-97SfzzpP8i-320,00",
+  },
   lote3: { individual: "#pagamento-lote3-individual", dupla: "#pagamento-lote3-dupla" },
 };
 
