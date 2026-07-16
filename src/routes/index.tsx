@@ -557,42 +557,49 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
             )}
           </Section>
 
-          <Section title="Forma de pagamento">
-            <div className="grid grid-cols-2 gap-3">
-              {([
-                { id: "cartao", label: "Cartão", hint: "InfinityPay" },
-                { id: "pix", label: "Pix", hint: "Transferência" },
-              ] as const).map((opt) => {
-                const selected = paymentMethod === opt.id;
-                return (
-                  <label key={opt.id} className={`cursor-pointer text-center rounded-md border p-3 transition ${selected ? "border-accent bg-accent/10" : "border-border hover:border-accent"}`}>
-                    <input type="radio" name="paymentMethod" value={opt.id} checked={selected} onChange={() => setPaymentMethod(opt.id)} className="sr-only" />
-                    <span className="block font-display text-lg">{opt.label}</span>
-                    <span className="block text-[10px] uppercase tracking-widest text-muted-foreground">{opt.hint}</span>
-                  </label>
-                );
-              })}
-            </div>
-          </Section>
+          {!isFree && (
+            <Section title="Forma de pagamento">
+              <div className="grid grid-cols-2 gap-3">
+                {([
+                  { id: "cartao", label: "Cartão", hint: "InfinityPay" },
+                  { id: "pix", label: "Pix", hint: "Transferência" },
+                ] as const).map((opt) => {
+                  const selected = paymentMethod === opt.id;
+                  return (
+                    <label key={opt.id} className={`cursor-pointer text-center rounded-md border p-3 transition ${selected ? "border-accent bg-accent/10" : "border-border hover:border-accent"}`}>
+                      <input type="radio" name="paymentMethod" value={opt.id} checked={selected} onChange={() => setPaymentMethod(opt.id)} className="sr-only" />
+                      <span className="block font-display text-lg">{opt.label}</span>
+                      <span className="block text-[10px] uppercase tracking-widest text-muted-foreground">{opt.hint}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </Section>
+          )}
 
           <div className="pt-2 flex flex-col sm:flex-row-reverse gap-3">
             <button type="submit" disabled={submitting}
               className="flex-1 rounded-full bg-primary text-primary-foreground px-6 py-3 text-sm uppercase tracking-widest font-semibold hover:opacity-90 disabled:opacity-60">
               {submitting
                 ? "Enviando..."
-                : paymentMethod === "cartao"
-                  ? `Finalizar e pagar · ${formatCents(Math.round(price * 100))}${isDupla ? " (por pessoa)" : ""}`
-                  : `Finalizar e ver dados do Pix · ${formatCents(Math.round(totalPrice * 100))}`}
+                : isFree
+                  ? "Confirmar inscrição gratuita"
+                  : paymentMethod === "cartao"
+                    ? `Finalizar e pagar · ${formatCents(Math.round(price * 100))}${isDupla ? " (por pessoa)" : ""}`
+                    : `Finalizar e ver dados do Pix · ${formatCents(Math.round(totalPrice * 100))}`}
             </button>
             <button type="button" onClick={onClose} className="rounded-full border border-border px-6 py-3 text-sm uppercase tracking-widest hover:bg-secondary">
               Cancelar
             </button>
           </div>
           <p className="text-[11px] text-muted-foreground text-center">
-            {paymentMethod === "cartao"
-              ? "Ao finalizar, você será direcionada para o pagamento seguro via InfinityPay."
-              : "Ao finalizar, exibiremos os dados do Pix para você concluir o pagamento."}
+            {isFree
+              ? "Cupom cortesia aplicado — sua inscrição será confirmada automaticamente."
+              : paymentMethod === "cartao"
+                ? "Ao finalizar, você será direcionada para o pagamento seguro via InfinityPay."
+                : "Ao finalizar, exibiremos os dados do Pix para você concluir o pagamento."}
           </p>
+
 
         </form>
       </div>
