@@ -40,6 +40,26 @@ interface DbLot {
   dupla_price_cents: number;
   active: boolean;
   sort_order: number;
+  card_url_individual: string | null;
+  card_url_dupla: string | null;
+  pix_qr_individual_url: string | null;
+  pix_qr_dupla_url: string | null;
+}
+
+function mapDbLot(r: DbLot): Lot {
+  return {
+    id: r.id,
+    label: r.label,
+    total: r.total,
+    individual: r.individual_price_cents / 100,
+    dupla: r.dupla_price_cents / 100,
+    active: r.active,
+    sort_order: r.sort_order,
+    card_url_individual: r.card_url_individual,
+    card_url_dupla: r.card_url_dupla,
+    pix_qr_individual_url: r.pix_qr_individual_url,
+    pix_qr_dupla_url: r.pix_qr_dupla_url,
+  };
 }
 
 interface Selection {
