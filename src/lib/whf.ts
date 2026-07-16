@@ -8,6 +8,25 @@ export interface Lot {
   dupla: number; // BRL (per person)
   active: boolean;
   sort_order: number;
+  card_url_individual?: string | null;
+  card_url_dupla?: string | null;
+  pix_qr_individual_url?: string | null;
+  pix_qr_dupla_url?: string | null;
+}
+
+export interface Coupon {
+  id: string;
+  code: string;
+  description: string | null;
+  individual_price_cents: number | null;
+  dupla_price_cents: number | null;
+  card_url_individual: string | null;
+  card_url_dupla: string | null;
+  pix_qr_individual_url: string | null;
+  pix_qr_dupla_url: string | null;
+  auto_confirm: boolean;
+  valid_for: "individual" | "dupla" | "both";
+  active: boolean;
 }
 
 export const CLASS_TIMES = ["11:00", "12:00"] as const;
