@@ -87,6 +87,7 @@ function AdminPage() {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [lots, setLots] = useState<Lot[]>([]);
   const [regs, setRegs] = useState<Registration[]>([]);
+  const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [openRegId, setOpenRegId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -97,7 +98,7 @@ function AdminPage() {
       const admin = !!roles?.some((r) => r.role === "admin");
       setIsAdmin(admin);
       if (!admin) return;
-      await Promise.all([loadLots(), loadRegs()]);
+      await Promise.all([loadLots(), loadRegs(), loadCoupons()]);
     })();
   }, []);
 
@@ -111,6 +112,12 @@ function AdminPage() {
     const { data, error } = await supabase.from("registrations").select("*").order("created_at", { ascending: false });
     if (error) toast.error(error.message);
     else setRegs((data as Registration[]) ?? []);
+  }
+
+  async function loadCoupons() {
+    const { data, error } = await supabase.from("coupons").select("*").order("code");
+    if (error) toast.error(error.message);
+    else setCoupons((data as Coupon[]) ?? []);
   }
 
   async function toggleLot(lot: Lot) {
