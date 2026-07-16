@@ -267,8 +267,10 @@ const initialForm: FormState = {
   suggestions: "",
 };
 
-const COUPON_CODE = "WHFVIP";
+const COUPON_LOTE1 = "WHFVIP";
+const COUPON_FREE = "INFLUWHF";
 const COUPON_LOT_ID = "lote1";
+type CouponKind = "lote1" | "free";
 
 function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { selection: Selection; occupancy: Record<string, number>; onClose: () => void; onSubmitted: () => void }) {
   const { lot: originalLot, type } = selection;
@@ -277,8 +279,9 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cartao");
   const [pixConfirmation, setPixConfirmation] = useState(false);
   const [cardConfirmation, setCardConfirmation] = useState(false);
+  const [freeConfirmation, setFreeConfirmation] = useState(false);
   const [couponInput, setCouponInput] = useState("");
-  const [couponApplied, setCouponApplied] = useState(false);
+  const [couponKind, setCouponKind] = useState<CouponKind | null>(null);
   const [lote1, setLote1] = useState<Lot | null>(originalLot.id === COUPON_LOT_ID ? originalLot : null);
 
   useEffect(() => {
@@ -302,29 +305,38 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
       });
   }, [originalLot]);
 
-  const lot = couponApplied && lote1 ? lote1 : originalLot;
+  const isFree = couponKind === "free";
+  const lot = couponKind === "lote1" && lote1 ? lote1 : originalLot;
   const paymentUrl = useMemo(() => paymentUrlFor(lot.id, type), [lot, type]);
-  const price = type === "individual" ? lot.individual : lot.dupla;
+  const basePrice = type === "individual" ? lot.individual : lot.dupla;
+  const price = isFree ? 0 : basePrice;
   const isDupla = type === "dupla";
-  const totalPrice = isDupla ? price * 2 : price;
+  const totalPrice = isFree ? 0 : (isDupla ? price * 2 : price);
   const seatsNeeded = isDupla ? 2 : 1;
   const availableTimes = CLASS_TIMES.filter((t) => (occupancy[t] ?? 0) + seatsNeeded <= CLASS_CAPACITY);
 
   function applyCoupon() {
-    if (couponInput.trim().toUpperCase() !== COUPON_CODE) {
-      toast.error("Cupom inválido.");
+    const code = couponInput.trim().toUpperCase();
+    if (code === COUPON_LOTE1) {
+      if (!lote1) { toast.error("Aguarde… carregando lote promocional."); return; }
+      setCouponKind("lote1");
+      toast.success("Cupom aplicado! Valor promocional do Lote 1 liberado.");
       return;
     }
-    if (!lote1) {
-      toast.error("Aguarde… carregando lote promocional.");
+    if (code === COUPON_FREE) {
+      if (type !== "individual") {
+        toast.error("Cupom INFLUWHF válido apenas para inscrição individual.");
+        return;
+      }
+      setCouponKind("free");
+      toast.success("Cupom aplicado! Sua inscrição individual será gratuita.");
       return;
     }
-    setCouponApplied(true);
-    toast.success("Cupom aplicado! Valor promocional do Lote 1 liberado.");
+    toast.error("Cupom inválido.");
   }
 
   function removeCoupon() {
-    setCouponApplied(false);
+    setCouponKind(null);
     setCouponInput("");
   }
 
@@ -385,8 +397,9 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
       partner_parq_q7: isDupla ? form.partnerParq[6] : null,
       partner_parq_notes: isDupla ? (form.partnerParqNotes || null) : null,
       event_suggestions: form.suggestions || null,
-      payment_method: paymentMethod,
-      payment_url: paymentMethod === "cartao" ? paymentUrl : "pix",
+      payment_method: isFree ? "cortesia" : paymentMethod,
+      payment_url: isFree ? COUPON_FREE : (paymentMethod === "cartao" ? paymentUrl : "pix"),
+      status: isFree ? "confirmado" : "pendente",
     });
     setSubmitting(false);
 
@@ -399,13 +412,20 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
 
     onSubmitted();
 
-    if (paymentMethod === "cartao") {
+    if (isFree) {
+      toast.success("Inscrição confirmada! Nos vemos no WHF.");
+      setFreeConfirmation(true);
+    } else if (paymentMethod === "cartao") {
       toast.success("Inscrição registrada! Finalize o pagamento.");
       setCardConfirmation(true);
     } else {
       toast.success("Inscrição registrada! Confira os dados do Pix.");
       setPixConfirmation(true);
     }
+  }
+
+  if (freeConfirmation) {
+    return <FreeScreen lotLabel={lot.label} onClose={onClose} />;
   }
 
   if (cardConfirmation) {
@@ -415,6 +435,7 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
   if (pixConfirmation) {
     return <PixScreen totalPrice={totalPrice} lotLabel={lot.label} typeLabel={isDupla ? "Dupla" : "Individual"} onClose={onClose} />;
   }
+
 
 
   return (
@@ -508,10 +529,10 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
           </Section>
 
           <Section title="Cupom de desconto">
-            {couponApplied ? (
+            {couponKind ? (
               <div className="flex items-center justify-between rounded-md border border-accent bg-accent/10 px-4 py-3 text-sm">
                 <span>
-                  Cupom <span className="font-semibold">{COUPON_CODE}</span> aplicado — valor do Lote 1.
+                  Cupom <span className="font-semibold">{couponKind === "free" ? COUPON_FREE : COUPON_LOTE1}</span> aplicado — {couponKind === "free" ? "inscrição gratuita." : "valor do Lote 1."}
                 </span>
                 <button type="button" onClick={removeCoupon} className="text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground">
                   Remover
@@ -536,42 +557,49 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
             )}
           </Section>
 
-          <Section title="Forma de pagamento">
-            <div className="grid grid-cols-2 gap-3">
-              {([
-                { id: "cartao", label: "Cartão", hint: "InfinityPay" },
-                { id: "pix", label: "Pix", hint: "Transferência" },
-              ] as const).map((opt) => {
-                const selected = paymentMethod === opt.id;
-                return (
-                  <label key={opt.id} className={`cursor-pointer text-center rounded-md border p-3 transition ${selected ? "border-accent bg-accent/10" : "border-border hover:border-accent"}`}>
-                    <input type="radio" name="paymentMethod" value={opt.id} checked={selected} onChange={() => setPaymentMethod(opt.id)} className="sr-only" />
-                    <span className="block font-display text-lg">{opt.label}</span>
-                    <span className="block text-[10px] uppercase tracking-widest text-muted-foreground">{opt.hint}</span>
-                  </label>
-                );
-              })}
-            </div>
-          </Section>
+          {!isFree && (
+            <Section title="Forma de pagamento">
+              <div className="grid grid-cols-2 gap-3">
+                {([
+                  { id: "cartao", label: "Cartão", hint: "InfinityPay" },
+                  { id: "pix", label: "Pix", hint: "Transferência" },
+                ] as const).map((opt) => {
+                  const selected = paymentMethod === opt.id;
+                  return (
+                    <label key={opt.id} className={`cursor-pointer text-center rounded-md border p-3 transition ${selected ? "border-accent bg-accent/10" : "border-border hover:border-accent"}`}>
+                      <input type="radio" name="paymentMethod" value={opt.id} checked={selected} onChange={() => setPaymentMethod(opt.id)} className="sr-only" />
+                      <span className="block font-display text-lg">{opt.label}</span>
+                      <span className="block text-[10px] uppercase tracking-widest text-muted-foreground">{opt.hint}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </Section>
+          )}
 
           <div className="pt-2 flex flex-col sm:flex-row-reverse gap-3">
             <button type="submit" disabled={submitting}
               className="flex-1 rounded-full bg-primary text-primary-foreground px-6 py-3 text-sm uppercase tracking-widest font-semibold hover:opacity-90 disabled:opacity-60">
               {submitting
                 ? "Enviando..."
-                : paymentMethod === "cartao"
-                  ? `Finalizar e pagar · ${formatCents(Math.round(price * 100))}${isDupla ? " (por pessoa)" : ""}`
-                  : `Finalizar e ver dados do Pix · ${formatCents(Math.round(totalPrice * 100))}`}
+                : isFree
+                  ? "Confirmar inscrição gratuita"
+                  : paymentMethod === "cartao"
+                    ? `Finalizar e pagar · ${formatCents(Math.round(price * 100))}${isDupla ? " (por pessoa)" : ""}`
+                    : `Finalizar e ver dados do Pix · ${formatCents(Math.round(totalPrice * 100))}`}
             </button>
             <button type="button" onClick={onClose} className="rounded-full border border-border px-6 py-3 text-sm uppercase tracking-widest hover:bg-secondary">
               Cancelar
             </button>
           </div>
           <p className="text-[11px] text-muted-foreground text-center">
-            {paymentMethod === "cartao"
-              ? "Ao finalizar, você será direcionada para o pagamento seguro via InfinityPay."
-              : "Ao finalizar, exibiremos os dados do Pix para você concluir o pagamento."}
+            {isFree
+              ? "Cupom cortesia aplicado — sua inscrição será confirmada automaticamente."
+              : paymentMethod === "cartao"
+                ? "Ao finalizar, você será direcionada para o pagamento seguro via InfinityPay."
+                : "Ao finalizar, exibiremos os dados do Pix para você concluir o pagamento."}
           </p>
+
 
         </form>
       </div>
@@ -771,3 +799,32 @@ function CardScreen({ paymentUrl, totalPrice, lotLabel, typeLabel, onClose }: { 
     </div>
   );
 }
+
+function FreeScreen({ lotLabel, onClose }: { lotLabel: string; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-primary/70 backdrop-blur-sm p-4 md:p-8">
+      <div className="w-full max-w-lg bg-background rounded-lg shadow-xl border border-accent/40">
+        <div className="border-b border-border px-6 py-4 flex items-start justify-between gap-4">
+          <div>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+              {lotLabel} · Individual · Cortesia
+            </p>
+            <h3 className="font-display text-2xl">Inscrição confirmada</h3>
+          </div>
+          <button type="button" onClick={onClose} aria-label="Fechar" className="text-muted-foreground hover:text-foreground text-2xl leading-none">×</button>
+        </div>
+
+        <div className="px-6 py-8 space-y-5 text-center">
+          <p className="text-sm text-muted-foreground">
+            Seu cupom cortesia <span className="text-foreground font-semibold">INFLUWHF</span> foi aplicado e sua inscrição está <span className="text-foreground font-semibold">confirmada</span>.
+          </p>
+          <p className="italic-serif text-accent text-lg">Nos vemos no WHF ✨</p>
+          <button type="button" onClick={onClose} className="w-full rounded-full bg-primary text-primary-foreground px-6 py-3 text-sm uppercase tracking-widest font-semibold hover:opacity-90">
+            Fechar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
