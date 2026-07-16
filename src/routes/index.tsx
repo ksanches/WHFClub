@@ -91,17 +91,7 @@ function LandingPage() {
       .order("sort_order")
       .then(({ data }) => {
         const rows = (data as DbLot[] | null) ?? [];
-        setLots(
-          rows.map((r) => ({
-            id: r.id,
-            label: r.label,
-            total: r.total,
-            individual: r.individual_price_cents / 100,
-            dupla: r.dupla_price_cents / 100,
-            active: r.active,
-            sort_order: r.sort_order,
-          })),
-        );
+        setLots(rows.map(mapDbLot));
         setLoading(false);
       });
     loadOccupancy();
