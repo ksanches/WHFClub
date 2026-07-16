@@ -716,7 +716,7 @@ function PixScreen({ qrUrl, totalPrice, lotLabel, typeLabel, onClose }: { qrUrl:
 
           <div className="rounded-md border border-border bg-white p-3 flex items-center justify-center">
             <img
-              src={qr.url}
+              src={qrUrl}
               alt={`QR Code Pix — ${typeLabel} — ${formatBRL(totalPrice)}`}
               className="w-full max-w-xs h-auto"
             />
