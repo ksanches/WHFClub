@@ -267,20 +267,66 @@ const initialForm: FormState = {
   suggestions: "",
 };
 
+const COUPON_CODE = "WHFVIP";
+const COUPON_LOT_ID = "lote1";
+
 function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { selection: Selection; occupancy: Record<string, number>; onClose: () => void; onSubmitted: () => void }) {
-  const { lot, type } = selection;
+  const { lot: originalLot, type } = selection;
   const [form, setForm] = useState<FormState>(initialForm);
   const [submitting, setSubmitting] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cartao");
   const [pixConfirmation, setPixConfirmation] = useState(false);
   const [cardConfirmation, setCardConfirmation] = useState(false);
+  const [couponInput, setCouponInput] = useState("");
+  const [couponApplied, setCouponApplied] = useState(false);
+  const [lote1, setLote1] = useState<Lot | null>(originalLot.id === COUPON_LOT_ID ? originalLot : null);
 
+  useEffect(() => {
+    if (originalLot.id === COUPON_LOT_ID) return;
+    supabase
+      .from("lots")
+      .select("*")
+      .eq("id", COUPON_LOT_ID)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!data) return;
+        setLote1({
+          id: data.id,
+          label: data.label,
+          total: data.total,
+          individual: data.individual_price_cents / 100,
+          dupla: data.dupla_price_cents / 100,
+          active: data.active,
+          sort_order: data.sort_order,
+        });
+      });
+  }, [originalLot]);
+
+  const lot = couponApplied && lote1 ? lote1 : originalLot;
   const paymentUrl = useMemo(() => paymentUrlFor(lot.id, type), [lot, type]);
   const price = type === "individual" ? lot.individual : lot.dupla;
   const isDupla = type === "dupla";
   const totalPrice = isDupla ? price * 2 : price;
   const seatsNeeded = isDupla ? 2 : 1;
   const availableTimes = CLASS_TIMES.filter((t) => (occupancy[t] ?? 0) + seatsNeeded <= CLASS_CAPACITY);
+
+  function applyCoupon() {
+    if (couponInput.trim().toUpperCase() !== COUPON_CODE) {
+      toast.error("Cupom inválido.");
+      return;
+    }
+    if (!lote1) {
+      toast.error("Aguarde… carregando lote promocional.");
+      return;
+    }
+    setCouponApplied(true);
+    toast.success("Cupom aplicado! Valor promocional do Lote 1 liberado.");
+  }
+
+  function removeCoupon() {
+    setCouponApplied(false);
+    setCouponInput("");
+  }
 
   function update<K extends keyof FormState>(k: K, v: FormState[K]) {
     setForm((f) => ({ ...f, [k]: v }));
