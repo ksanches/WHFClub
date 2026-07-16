@@ -545,10 +545,10 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
           </Section>
 
           <Section title="Cupom de desconto">
-            {couponKind ? (
+            {coupon ? (
               <div className="flex items-center justify-between rounded-md border border-accent bg-accent/10 px-4 py-3 text-sm">
                 <span>
-                  Cupom <span className="font-semibold">{couponKind === "free" ? COUPON_FREE : COUPON_LOTE1}</span> aplicado — {couponKind === "free" ? "inscrição gratuita." : "valor do Lote 1."}
+                  Cupom <span className="font-semibold">{coupon.code}</span> aplicado{coupon.description ? ` — ${coupon.description}` : "."}
                 </span>
                 <button type="button" onClick={removeCoupon} className="text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground">
                   Remover
@@ -565,9 +565,10 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
                 <button
                   type="button"
                   onClick={applyCoupon}
-                  className="rounded-md border border-primary px-4 py-2 text-xs uppercase tracking-widest text-primary hover:bg-primary hover:text-primary-foreground transition"
+                  disabled={applyingCoupon}
+                  className="rounded-md border border-primary px-4 py-2 text-xs uppercase tracking-widest text-primary hover:bg-primary hover:text-primary-foreground transition disabled:opacity-50"
                 >
-                  Aplicar
+                  {applyingCoupon ? "…" : "Aplicar"}
                 </button>
               </div>
             )}
