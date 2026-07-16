@@ -799,3 +799,32 @@ function CardScreen({ paymentUrl, totalPrice, lotLabel, typeLabel, onClose }: { 
     </div>
   );
 }
+
+function FreeScreen({ lotLabel, onClose }: { lotLabel: string; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-primary/70 backdrop-blur-sm p-4 md:p-8">
+      <div className="w-full max-w-lg bg-background rounded-lg shadow-xl border border-accent/40">
+        <div className="border-b border-border px-6 py-4 flex items-start justify-between gap-4">
+          <div>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+              {lotLabel} · Individual · Cortesia
+            </p>
+            <h3 className="font-display text-2xl">Inscrição confirmada</h3>
+          </div>
+          <button type="button" onClick={onClose} aria-label="Fechar" className="text-muted-foreground hover:text-foreground text-2xl leading-none">×</button>
+        </div>
+
+        <div className="px-6 py-8 space-y-5 text-center">
+          <p className="text-sm text-muted-foreground">
+            Seu cupom cortesia <span className="text-foreground font-semibold">INFLUWHF</span> foi aplicado e sua inscrição está <span className="text-foreground font-semibold">confirmada</span>.
+          </p>
+          <p className="italic-serif text-accent text-lg">Nos vemos no WHF ✨</p>
+          <button type="button" onClick={onClose} className="w-full rounded-full bg-primary text-primary-foreground px-6 py-3 text-sm uppercase tracking-widest font-semibold hover:opacity-90">
+            Fechar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
