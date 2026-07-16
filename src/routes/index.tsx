@@ -5,7 +5,6 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   CLASS_TIMES,
   CLASS_CAPACITY,
-  paymentUrlFor,
   formatBRL,
   formatCents,
   maskCPF,
@@ -13,8 +12,9 @@ import {
   maskPhone,
   isValidMobileBR,
   PARQ_QUESTIONS,
-  
+
   type Lot,
+  type Coupon,
   type TicketType,
   type PaymentMethod,
 } from "@/lib/whf";
@@ -25,6 +25,7 @@ import pixIndividualLote1Asset from "@/assets/pix_individual_lote1.jpeg.asset.js
 import pixDuplaLote1Asset from "@/assets/pix_dupla_lote1.jpeg.asset.json";
 
 const WHATSAPP_URL = "https://wa.me/5511965008538";
+
 
 
 export const Route = createFileRoute("/")({
