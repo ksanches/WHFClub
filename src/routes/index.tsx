@@ -5,7 +5,6 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   CLASS_TIMES,
   CLASS_CAPACITY,
-  paymentUrlFor,
   formatBRL,
   formatCents,
   maskCPF,
@@ -13,8 +12,9 @@ import {
   maskPhone,
   isValidMobileBR,
   PARQ_QUESTIONS,
-  
+
   type Lot,
+  type Coupon,
   type TicketType,
   type PaymentMethod,
 } from "@/lib/whf";
@@ -25,6 +25,7 @@ import pixIndividualLote1Asset from "@/assets/pix_individual_lote1.jpeg.asset.js
 import pixDuplaLote1Asset from "@/assets/pix_dupla_lote1.jpeg.asset.json";
 
 const WHATSAPP_URL = "https://wa.me/5511965008538";
+
 
 
 export const Route = createFileRoute("/")({
@@ -39,6 +40,26 @@ interface DbLot {
   dupla_price_cents: number;
   active: boolean;
   sort_order: number;
+  card_url_individual: string | null;
+  card_url_dupla: string | null;
+  pix_qr_individual_url: string | null;
+  pix_qr_dupla_url: string | null;
+}
+
+function mapDbLot(r: DbLot): Lot {
+  return {
+    id: r.id,
+    label: r.label,
+    total: r.total,
+    individual: r.individual_price_cents / 100,
+    dupla: r.dupla_price_cents / 100,
+    active: r.active,
+    sort_order: r.sort_order,
+    card_url_individual: r.card_url_individual,
+    card_url_dupla: r.card_url_dupla,
+    pix_qr_individual_url: r.pix_qr_individual_url,
+    pix_qr_dupla_url: r.pix_qr_dupla_url,
+  };
 }
 
 interface Selection {
@@ -70,17 +91,7 @@ function LandingPage() {
       .order("sort_order")
       .then(({ data }) => {
         const rows = (data as DbLot[] | null) ?? [];
-        setLots(
-          rows.map((r) => ({
-            id: r.id,
-            label: r.label,
-            total: r.total,
-            individual: r.individual_price_cents / 100,
-            dupla: r.dupla_price_cents / 100,
-            active: r.active,
-            sort_order: r.sort_order,
-          })),
-        );
+        setLots(rows.map(mapDbLot));
         setLoading(false);
       });
     loadOccupancy();
@@ -269,13 +280,8 @@ const initialForm: FormState = {
   suggestions: "",
 };
 
-const COUPON_LOTE1 = "WHFVIP";
-const COUPON_FREE = "INFLUWHF";
-const COUPON_LOT_ID = "lote1";
-type CouponKind = "lote1" | "free";
-
 function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { selection: Selection; occupancy: Record<string, number>; onClose: () => void; onSubmitted: () => void }) {
-  const { lot: originalLot, type } = selection;
+  const { lot, type } = selection;
   const [form, setForm] = useState<FormState>(initialForm);
   const [submitting, setSubmitting] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cartao");
@@ -283,64 +289,72 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
   const [cardConfirmation, setCardConfirmation] = useState(false);
   const [freeConfirmation, setFreeConfirmation] = useState(false);
   const [couponInput, setCouponInput] = useState("");
-  const [couponKind, setCouponKind] = useState<CouponKind | null>(null);
-  const [lote1, setLote1] = useState<Lot | null>(originalLot.id === COUPON_LOT_ID ? originalLot : null);
+  const [coupon, setCoupon] = useState<Coupon | null>(null);
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
 
-  useEffect(() => {
-    if (originalLot.id === COUPON_LOT_ID) return;
-    supabase
-      .from("lots")
-      .select("*")
-      .eq("id", COUPON_LOT_ID)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (!data) return;
-        setLote1({
-          id: data.id,
-          label: data.label,
-          total: data.total,
-          individual: data.individual_price_cents / 100,
-          dupla: data.dupla_price_cents / 100,
-          active: data.active,
-          sort_order: data.sort_order,
-        });
-      });
-  }, [originalLot]);
-
-  const isFree = couponKind === "free";
-  const lot = couponKind === "lote1" && lote1 ? lote1 : originalLot;
-  const paymentUrl = useMemo(() => paymentUrlFor(lot.id, type), [lot, type]);
-  const basePrice = type === "individual" ? lot.individual : lot.dupla;
-  const price = isFree ? 0 : basePrice;
   const isDupla = type === "dupla";
-  const totalPrice = isFree ? 0 : (isDupla ? price * 2 : price);
   const seatsNeeded = isDupla ? 2 : 1;
   const availableTimes = CLASS_TIMES.filter((t) => (occupancy[t] ?? 0) + seatsNeeded <= CLASS_CAPACITY);
 
-  function applyCoupon() {
+  const couponPriceCents = coupon
+    ? (type === "individual" ? coupon.individual_price_cents : coupon.dupla_price_cents)
+    : null;
+  const lotPrice = type === "individual" ? lot.individual : lot.dupla;
+  const price = couponPriceCents !== null && couponPriceCents !== undefined
+    ? couponPriceCents / 100
+    : lotPrice;
+  const totalPrice = isDupla ? price * 2 : price;
+  const isFree = !!coupon && totalPrice === 0;
+
+  const paymentUrl = useMemo(() => {
+    if (coupon) {
+      const c = type === "individual" ? coupon.card_url_individual : coupon.card_url_dupla;
+      if (c) return c;
+    }
+    const l = type === "individual" ? lot.card_url_individual : lot.card_url_dupla;
+    return l || "#";
+  }, [coupon, lot, type]);
+
+  const pixQrUrl = useMemo(() => {
+    if (coupon) {
+      const c = type === "individual" ? coupon.pix_qr_individual_url : coupon.pix_qr_dupla_url;
+      if (c) return c;
+    }
+    const l = type === "individual" ? lot.pix_qr_individual_url : lot.pix_qr_dupla_url;
+    if (l) return l;
+    if (lot.id === "lote1") {
+      return isDupla ? pixDuplaLote1Asset.url : pixIndividualLote1Asset.url;
+    }
+    return isDupla ? pixDuplaAsset.url : pixIndividualAsset.url;
+  }, [coupon, lot, type, isDupla]);
+
+  async function applyCoupon() {
     const code = couponInput.trim().toUpperCase();
-    if (code === COUPON_LOTE1) {
-      if (!lote1) { toast.error("Aguarde… carregando lote promocional."); return; }
-      setCouponKind("lote1");
-      toast.success("Cupom aplicado! Valor promocional do Lote 1 liberado.");
+    if (!code) { toast.error("Insira um cupom."); return; }
+    setApplyingCoupon(true);
+    const { data, error } = await supabase
+      .from("coupons")
+      .select("*")
+      .eq("code", code)
+      .eq("active", true)
+      .maybeSingle();
+    setApplyingCoupon(false);
+    if (error) { toast.error("Erro ao validar cupom."); return; }
+    if (!data) { toast.error("Cupom inválido."); return; }
+    const c = data as Coupon;
+    if (c.valid_for !== "both" && c.valid_for !== type) {
+      toast.error(`Cupom válido apenas para inscrição ${c.valid_for === "individual" ? "individual" : "em dupla"}.`);
       return;
     }
-    if (code === COUPON_FREE) {
-      if (type !== "individual") {
-        toast.error("Cupom INFLUWHF válido apenas para inscrição individual.");
-        return;
-      }
-      setCouponKind("free");
-      toast.success("Cupom aplicado! Sua inscrição individual será gratuita.");
-      return;
-    }
-    toast.error("Cupom inválido.");
+    setCoupon(c);
+    toast.success(`Cupom ${c.code} aplicado!`);
   }
 
   function removeCoupon() {
-    setCouponKind(null);
+    setCoupon(null);
     setCouponInput("");
   }
+
 
   function update<K extends keyof FormState>(k: K, v: FormState[K]) {
     setForm((f) => ({ ...f, [k]: v }));
@@ -400,8 +414,8 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
       partner_parq_notes: isDupla ? (form.partnerParqNotes || null) : null,
       event_suggestions: form.suggestions || null,
       payment_method: isFree ? "cortesia" : paymentMethod,
-      payment_url: isFree ? COUPON_FREE : (paymentMethod === "cartao" ? paymentUrl : "pix"),
-      status: isFree ? "confirmado" : "pendente",
+      payment_url: isFree ? (coupon?.code ?? "cortesia") : (paymentMethod === "cartao" ? paymentUrl : "pix"),
+      status: (coupon?.auto_confirm || isFree) ? "confirmado" : "pendente",
     });
     setSubmitting(false);
 
@@ -418,16 +432,16 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
       toast.success("Inscrição confirmada! Nos vemos no WHF.");
       setFreeConfirmation(true);
     } else if (paymentMethod === "cartao") {
-      toast.success("Inscrição registrada! Finalize o pagamento.");
+      toast.success(coupon?.auto_confirm ? "Inscrição confirmada!" : "Inscrição registrada! Finalize o pagamento.");
       setCardConfirmation(true);
     } else {
-      toast.success("Inscrição registrada! Confira os dados do Pix.");
+      toast.success(coupon?.auto_confirm ? "Inscrição confirmada!" : "Inscrição registrada! Confira os dados do Pix.");
       setPixConfirmation(true);
     }
   }
 
   if (freeConfirmation) {
-    return <FreeScreen lotLabel={lot.label} onClose={onClose} />;
+    return <FreeScreen lotLabel={lot.label} couponCode={coupon?.code ?? ""} onClose={onClose} />;
   }
 
   if (cardConfirmation) {
@@ -435,7 +449,7 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
   }
 
   if (pixConfirmation) {
-    return <PixScreen lotId={lot.id} totalPrice={totalPrice} lotLabel={lot.label} typeLabel={isDupla ? "Dupla" : "Individual"} onClose={onClose} />;
+    return <PixScreen qrUrl={pixQrUrl} totalPrice={totalPrice} lotLabel={lot.label} typeLabel={isDupla ? "Dupla" : "Individual"} onClose={onClose} />;
   }
 
 
@@ -531,10 +545,10 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
           </Section>
 
           <Section title="Cupom de desconto">
-            {couponKind ? (
+            {coupon ? (
               <div className="flex items-center justify-between rounded-md border border-accent bg-accent/10 px-4 py-3 text-sm">
                 <span>
-                  Cupom <span className="font-semibold">{couponKind === "free" ? COUPON_FREE : COUPON_LOTE1}</span> aplicado — {couponKind === "free" ? "inscrição gratuita." : "valor do Lote 1."}
+                  Cupom <span className="font-semibold">{coupon.code}</span> aplicado{coupon.description ? ` — ${coupon.description}` : "."}
                 </span>
                 <button type="button" onClick={removeCoupon} className="text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground">
                   Remover
@@ -551,9 +565,10 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
                 <button
                   type="button"
                   onClick={applyCoupon}
-                  className="rounded-md border border-primary px-4 py-2 text-xs uppercase tracking-widest text-primary hover:bg-primary hover:text-primary-foreground transition"
+                  disabled={applyingCoupon}
+                  className="rounded-md border border-primary px-4 py-2 text-xs uppercase tracking-widest text-primary hover:bg-primary hover:text-primary-foreground transition disabled:opacity-50"
                 >
-                  Aplicar
+                  {applyingCoupon ? "…" : "Aplicar"}
                 </button>
               </div>
             )}
@@ -668,12 +683,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function PixScreen({ lotId, totalPrice, lotLabel, typeLabel, onClose }: { lotId: string; totalPrice: number; lotLabel: string; typeLabel: string; onClose: () => void }) {
-  const isDupla = typeLabel.toLowerCase().includes("dupla");
-  const isLote1 = lotId === "lote1";
-  const qr = isDupla
-    ? (isLote1 ? pixDuplaLote1Asset : pixDuplaAsset)
-    : (isLote1 ? pixIndividualLote1Asset : pixIndividualAsset);
+function PixScreen({ qrUrl, totalPrice, lotLabel, typeLabel, onClose }: { qrUrl: string; totalPrice: number; lotLabel: string; typeLabel: string; onClose: () => void }) {
   const waMessage = encodeURIComponent(
     `Olá! Segue o comprovante do Pix da inscrição WHF (${lotLabel} · ${typeLabel} · ${formatBRL(totalPrice)}).`
   );
@@ -706,7 +716,7 @@ function PixScreen({ lotId, totalPrice, lotLabel, typeLabel, onClose }: { lotId:
 
           <div className="rounded-md border border-border bg-white p-3 flex items-center justify-center">
             <img
-              src={qr.url}
+              src={qrUrl}
               alt={`QR Code Pix — ${typeLabel} — ${formatBRL(totalPrice)}`}
               className="w-full max-w-xs h-auto"
             />
@@ -805,14 +815,14 @@ function CardScreen({ paymentUrl, totalPrice, lotLabel, typeLabel, onClose }: { 
   );
 }
 
-function FreeScreen({ lotLabel, onClose }: { lotLabel: string; onClose: () => void }) {
+function FreeScreen({ lotLabel, couponCode, onClose }: { lotLabel: string; couponCode: string; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-primary/70 backdrop-blur-sm p-4 md:p-8">
       <div className="w-full max-w-lg bg-background rounded-lg shadow-xl border border-accent/40">
         <div className="border-b border-border px-6 py-4 flex items-start justify-between gap-4">
           <div>
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
-              {lotLabel} · Individual · Cortesia
+              {lotLabel} · Cortesia
             </p>
             <h3 className="font-display text-2xl">Inscrição confirmada</h3>
           </div>
@@ -821,7 +831,8 @@ function FreeScreen({ lotLabel, onClose }: { lotLabel: string; onClose: () => vo
 
         <div className="px-6 py-8 space-y-5 text-center">
           <p className="text-sm text-muted-foreground">
-            Seu cupom cortesia <span className="text-foreground font-semibold">INFLUWHF</span> foi aplicado e sua inscrição está <span className="text-foreground font-semibold">confirmada</span>.
+            {couponCode ? <>Seu cupom cortesia <span className="text-foreground font-semibold">{couponCode}</span> foi aplicado e sua inscrição está </> : "Sua inscrição está "}
+            <span className="text-foreground font-semibold">confirmada</span>.
           </p>
           <p className="italic-serif text-accent text-lg">Nos vemos no WHF ✨</p>
           <button type="button" onClick={onClose} className="w-full rounded-full bg-primary text-primary-foreground px-6 py-3 text-sm uppercase tracking-widest font-semibold hover:opacity-90">

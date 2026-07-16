@@ -18,6 +18,25 @@ interface Lot {
   dupla_price_cents: number;
   active: boolean;
   sort_order: number;
+  card_url_individual: string | null;
+  card_url_dupla: string | null;
+  pix_qr_individual_url: string | null;
+  pix_qr_dupla_url: string | null;
+}
+
+interface Coupon {
+  id: string;
+  code: string;
+  description: string | null;
+  individual_price_cents: number | null;
+  dupla_price_cents: number | null;
+  card_url_individual: string | null;
+  card_url_dupla: string | null;
+  pix_qr_individual_url: string | null;
+  pix_qr_dupla_url: string | null;
+  auto_confirm: boolean;
+  valid_for: "individual" | "dupla" | "both";
+  active: boolean;
 }
 
 type RegStatus = "pendente" | "confirmado" | "cancelado" | "reembolsado";
@@ -68,6 +87,7 @@ function AdminPage() {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [lots, setLots] = useState<Lot[]>([]);
   const [regs, setRegs] = useState<Registration[]>([]);
+  const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [openRegId, setOpenRegId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -78,7 +98,7 @@ function AdminPage() {
       const admin = !!roles?.some((r) => r.role === "admin");
       setIsAdmin(admin);
       if (!admin) return;
-      await Promise.all([loadLots(), loadRegs()]);
+      await Promise.all([loadLots(), loadRegs(), loadCoupons()]);
     })();
   }, []);
 
@@ -92,6 +112,12 @@ function AdminPage() {
     const { data, error } = await supabase.from("registrations").select("*").order("created_at", { ascending: false });
     if (error) toast.error(error.message);
     else setRegs((data as Registration[]) ?? []);
+  }
+
+  async function loadCoupons() {
+    const { data, error } = await supabase.from("coupons").select("*").order("code");
+    if (error) toast.error(error.message);
+    else setCoupons((data as Coupon[]) ?? []);
   }
 
   async function toggleLot(lot: Lot) {
@@ -282,6 +308,11 @@ function AdminPage() {
             })}
           </div>
         </section>
+
+        {/* Coupons */}
+        <CouponsPanel coupons={coupons} onReload={loadCoupons} />
+
+
 
         {/* Classes occupancy */}
         <section>
@@ -566,6 +597,10 @@ function LotEditor({
   const [individual, setIndividual] = useState((lot.individual_price_cents / 100).toFixed(2));
   const [dupla, setDupla] = useState((lot.dupla_price_cents / 100).toFixed(2));
   const [sortOrder, setSortOrder] = useState(lot.sort_order);
+  const [cardIndiv, setCardIndiv] = useState(lot.card_url_individual ?? "");
+  const [cardDupla, setCardDupla] = useState(lot.card_url_dupla ?? "");
+  const [pixIndiv, setPixIndiv] = useState(lot.pix_qr_individual_url ?? "");
+  const [pixDuplaUrl, setPixDuplaUrl] = useState(lot.pix_qr_dupla_url ?? "");
   const [saving, setSaving] = useState(false);
 
   function reset() {
@@ -574,6 +609,10 @@ function LotEditor({
     setIndividual((lot.individual_price_cents / 100).toFixed(2));
     setDupla((lot.dupla_price_cents / 100).toFixed(2));
     setSortOrder(lot.sort_order);
+    setCardIndiv(lot.card_url_individual ?? "");
+    setCardDupla(lot.card_url_dupla ?? "");
+    setPixIndiv(lot.pix_qr_individual_url ?? "");
+    setPixDuplaUrl(lot.pix_qr_dupla_url ?? "");
   }
 
   async function handleSave() {
@@ -590,6 +629,10 @@ function LotEditor({
       individual_price_cents: ind,
       dupla_price_cents: dup,
       sort_order: sortOrder,
+      card_url_individual: cardIndiv.trim() || null,
+      card_url_dupla: cardDupla.trim() || null,
+      pix_qr_individual_url: pixIndiv.trim() || null,
+      pix_qr_dupla_url: pixDuplaUrl.trim() || null,
     });
     setSaving(false);
     if (ok) setEditing(false);
@@ -608,6 +651,12 @@ function LotEditor({
           {sold}/{lot.total} vagas · {formatCents(lot.individual_price_cents)} indiv. · {formatCents(lot.dupla_price_cents)} dupla
         </p>
         <p className="mt-1 text-[10px] uppercase tracking-widest text-muted-foreground">Ordem: {lot.sort_order}</p>
+        <div className="mt-3 space-y-1 text-[11px] text-muted-foreground">
+          <p>💳 Individual: {lot.card_url_individual ? <span className="text-foreground">✓</span> : <span className="text-destructive">faltando</span>}</p>
+          <p>💳 Dupla: {lot.card_url_dupla ? <span className="text-foreground">✓</span> : <span className="text-destructive">faltando</span>}</p>
+          <p>📱 QR Indiv.: {lot.pix_qr_individual_url ? <span className="text-foreground">✓</span> : <span className="text-destructive">faltando</span>}</p>
+          <p>📱 QR Dupla: {lot.pix_qr_dupla_url ? <span className="text-foreground">✓</span> : <span className="text-destructive">faltando</span>}</p>
+        </div>
         <div className="mt-4 flex gap-2">
           <button
             onClick={onToggle}
@@ -678,6 +727,25 @@ function LotEditor({
           />
         </label>
       </div>
+
+      <div className="pt-3 border-t border-border space-y-3">
+        <p className="text-xs uppercase tracking-widest text-muted-foreground">Link de cartão (InfinityPay)</p>
+        <label className="block text-[10px] uppercase tracking-widest text-muted-foreground">
+          Individual
+          <input value={cardIndiv} onChange={(e) => setCardIndiv(e.target.value)} placeholder="https://link.infinitepay.io/..." className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm normal-case tracking-normal" />
+        </label>
+        <label className="block text-[10px] uppercase tracking-widest text-muted-foreground">
+          Dupla
+          <input value={cardDupla} onChange={(e) => setCardDupla(e.target.value)} placeholder="https://link.infinitepay.io/..." className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm normal-case tracking-normal" />
+        </label>
+      </div>
+
+      <div className="pt-3 border-t border-border space-y-3">
+        <p className="text-xs uppercase tracking-widest text-muted-foreground">QR Code Pix</p>
+        <QrField label="Individual" value={pixIndiv} onChange={setPixIndiv} folder={`lots/${lot.id}/individual`} />
+        <QrField label="Dupla" value={pixDuplaUrl} onChange={setPixDuplaUrl} folder={`lots/${lot.id}/dupla`} />
+      </div>
+
       <div className="flex gap-2 pt-1">
         <button
           onClick={() => setEditing(false)}
@@ -693,6 +761,375 @@ function LotEditor({
         >
           {saving ? "Salvando…" : "Salvar"}
         </button>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- Shared QR upload field ---------------- */
+
+async function uploadQr(file: File, folder: string): Promise<string | null> {
+  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+  const path = `${folder}/${Date.now()}.${ext}`;
+  const { error } = await supabase.storage.from("payment-assets").upload(path, file, {
+    cacheControl: "3600",
+    upsert: true,
+    contentType: file.type,
+  });
+  if (error) {
+    toast.error(`Falha no upload: ${error.message}`);
+    return null;
+  }
+  const { data } = supabase.storage.from("payment-assets").getPublicUrl(path);
+  return data.publicUrl;
+}
+
+function QrField({ label, value, onChange, folder }: { label: string; value: string; onChange: (v: string) => void; folder: string }) {
+  const [uploading, setUploading] = useState(false);
+  return (
+    <div className="space-y-2">
+      <p className="text-[10px] uppercase tracking-widest text-muted-foreground">{label}</p>
+      <div className="flex gap-3 items-start">
+        {value ? (
+          <img src={value} alt={`QR ${label}`} className="w-20 h-20 rounded-md border border-border bg-white object-contain" />
+        ) : (
+          <div className="w-20 h-20 rounded-md border border-dashed border-border flex items-center justify-center text-[10px] text-muted-foreground text-center px-1">Sem QR</div>
+        )}
+        <div className="flex-1 space-y-2">
+          <input
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder="URL do QR Code"
+            className="w-full rounded-md border border-border bg-background px-3 py-2 text-xs normal-case tracking-normal"
+          />
+          <div className="flex gap-2">
+            <label className="flex-1 cursor-pointer text-center rounded-md border border-border py-1.5 text-[10px] uppercase tracking-widest hover:bg-secondary">
+              {uploading ? "Enviando…" : "Enviar imagem"}
+              <input
+                type="file"
+                accept="image/*"
+                disabled={uploading}
+                onChange={async (e) => {
+                  const f = e.target.files?.[0];
+                  if (!f) return;
+                  setUploading(true);
+                  const url = await uploadQr(f, folder);
+                  setUploading(false);
+                  if (url) { onChange(url); toast.success("Imagem enviada"); }
+                  e.target.value = "";
+                }}
+                className="sr-only"
+              />
+            </label>
+            {value && (
+              <button
+                type="button"
+                onClick={() => onChange("")}
+                className="rounded-md border border-border px-3 py-1.5 text-[10px] uppercase tracking-widest hover:bg-secondary"
+              >
+                Limpar
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- Coupons panel ---------------- */
+
+const EMPTY_COUPON: Omit<Coupon, "id"> = {
+  code: "",
+  description: "",
+  individual_price_cents: null,
+  dupla_price_cents: null,
+  card_url_individual: null,
+  card_url_dupla: null,
+  pix_qr_individual_url: null,
+  pix_qr_dupla_url: null,
+  auto_confirm: false,
+  valid_for: "both",
+  active: true,
+};
+
+function CouponsPanel({ coupons, onReload }: { coupons: Coupon[]; onReload: () => Promise<void> }) {
+  const [editing, setEditing] = useState<Coupon | Omit<Coupon, "id"> | null>(null);
+  const isNew = editing !== null && !("id" in editing);
+
+  async function save(c: Coupon | Omit<Coupon, "id">) {
+    const payload = {
+      ...c,
+      code: c.code.trim().toUpperCase(),
+      description: c.description?.trim() || null,
+      card_url_individual: c.card_url_individual?.trim() || null,
+      card_url_dupla: c.card_url_dupla?.trim() || null,
+      pix_qr_individual_url: c.pix_qr_individual_url?.trim() || null,
+      pix_qr_dupla_url: c.pix_qr_dupla_url?.trim() || null,
+    };
+    if (!payload.code) { toast.error("Informe o código"); return; }
+    if ("id" in c) {
+      const { error } = await supabase.from("coupons").update(payload).eq("id", c.id);
+      if (error) { toast.error(error.message); return; }
+      toast.success("Cupom atualizado");
+    } else {
+      const { error } = await supabase.from("coupons").insert(payload);
+      if (error) { toast.error(error.message); return; }
+      toast.success("Cupom criado");
+    }
+    setEditing(null);
+    await onReload();
+  }
+
+  async function toggleActive(c: Coupon) {
+    const { error } = await supabase.from("coupons").update({ active: !c.active }).eq("id", c.id);
+    if (error) return toast.error(error.message);
+    await onReload();
+  }
+
+  async function remove(c: Coupon) {
+    if (!confirm(`Excluir cupom ${c.code}?`)) return;
+    const { error } = await supabase.from("coupons").delete().eq("id", c.id);
+    if (error) return toast.error(error.message);
+    toast.success("Cupom excluído");
+    await onReload();
+  }
+
+  return (
+    <section>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-display text-xl">Cupons</h2>
+        <button
+          onClick={() => setEditing({ ...EMPTY_COUPON })}
+          className="rounded-full bg-primary text-primary-foreground px-4 py-1.5 text-xs uppercase tracking-widest hover:opacity-90"
+        >
+          + Novo cupom
+        </button>
+      </div>
+
+      {coupons.length === 0 ? (
+        <p className="text-sm text-muted-foreground">Nenhum cupom cadastrado.</p>
+      ) : (
+        <div className="grid md:grid-cols-2 gap-4">
+          {coupons.map((c) => (
+            <div key={c.id} className="rounded-lg border border-border bg-card p-4">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <p className="font-display text-lg">{c.code}</p>
+                  {c.description && <p className="text-xs text-muted-foreground">{c.description}</p>}
+                </div>
+                <span className={`text-[10px] uppercase tracking-widest px-2 py-0.5 rounded ${c.active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+                  {c.active ? "Ativo" : "Inativo"}
+                </span>
+              </div>
+              <div className="mt-3 text-xs text-muted-foreground space-y-1">
+                <p>Válido para: <span className="text-foreground">{c.valid_for === "both" ? "Individual e Dupla" : c.valid_for === "individual" ? "Individual" : "Dupla"}</span></p>
+                <p>Individual: <span className="text-foreground">{c.individual_price_cents !== null ? formatCents(c.individual_price_cents) : "usa preço do lote"}</span></p>
+                <p>Dupla p/ pessoa: <span className="text-foreground">{c.dupla_price_cents !== null ? formatCents(c.dupla_price_cents) : "usa preço do lote"}</span></p>
+                <p>Confirmação automática: <span className="text-foreground">{c.auto_confirm ? "sim" : "não"}</span></p>
+              </div>
+              <div className="mt-4 flex gap-2">
+                <button onClick={() => toggleActive(c)} className="flex-1 rounded-full border border-border py-2 text-[10px] uppercase tracking-widest hover:bg-secondary">
+                  {c.active ? "Desativar" : "Ativar"}
+                </button>
+                <button onClick={() => setEditing(c)} className="flex-1 rounded-full bg-primary text-primary-foreground py-2 text-[10px] uppercase tracking-widest hover:opacity-90">
+                  Editar
+                </button>
+                <button onClick={() => remove(c)} className="rounded-full border border-destructive text-destructive py-2 px-3 text-[10px] uppercase tracking-widest hover:bg-destructive hover:text-destructive-foreground">
+                  ✕
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {editing && (
+        <CouponEditor
+          coupon={editing}
+          isNew={isNew}
+          onCancel={() => setEditing(null)}
+          onSave={save}
+        />
+      )}
+    </section>
+  );
+}
+
+function CouponEditor({
+  coupon,
+  isNew,
+  onCancel,
+  onSave,
+}: {
+  coupon: Coupon | Omit<Coupon, "id">;
+  isNew: boolean;
+  onCancel: () => void;
+  onSave: (c: Coupon | Omit<Coupon, "id">) => Promise<void>;
+}) {
+  const [form, setForm] = useState(coupon);
+  const [saving, setSaving] = useState(false);
+  const folderKey = "id" in form ? form.id : `new-${Date.now()}`;
+
+  function set<K extends keyof typeof form>(k: K, v: (typeof form)[K]) {
+    setForm((f) => ({ ...f, [k]: v }));
+  }
+
+  function priceInput(value: number | null): string {
+    return value === null ? "" : (value / 100).toFixed(2);
+  }
+
+  function parsePrice(v: string): number | null {
+    const trimmed = v.trim();
+    if (!trimmed) return null;
+    const n = parseFloat(trimmed.replace(",", "."));
+    if (!Number.isFinite(n) || n < 0) return null;
+    return Math.round(n * 100);
+  }
+
+  async function handleSave() {
+    setSaving(true);
+    await onSave(form);
+    setSaving(false);
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-primary/70 backdrop-blur-sm p-4">
+      <div className="w-full max-w-2xl bg-background rounded-lg border border-accent/40 p-6 my-4 space-y-4">
+        <div className="flex items-start justify-between">
+          <h3 className="font-display text-2xl">{isNew ? "Novo cupom" : `Editar ${form.code}`}</h3>
+          <button onClick={onCancel} className="text-2xl leading-none">×</button>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-3">
+          <label className="block text-xs uppercase tracking-widest text-muted-foreground">
+            Código
+            <input
+              value={form.code}
+              onChange={(e) => set("code", e.target.value.toUpperCase())}
+              placeholder="EX: WHFVIP"
+              className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm normal-case tracking-normal uppercase"
+            />
+          </label>
+          <label className="block text-xs uppercase tracking-widest text-muted-foreground">
+            Válido para
+            <select
+              value={form.valid_for}
+              onChange={(e) => set("valid_for", e.target.value as Coupon["valid_for"])}
+              className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm normal-case tracking-normal"
+            >
+              <option value="both">Individual e Dupla</option>
+              <option value="individual">Somente Individual</option>
+              <option value="dupla">Somente Dupla</option>
+            </select>
+          </label>
+        </div>
+
+        <label className="block text-xs uppercase tracking-widest text-muted-foreground">
+          Descrição (opcional)
+          <input
+            value={form.description ?? ""}
+            onChange={(e) => set("description", e.target.value)}
+            className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm normal-case tracking-normal"
+          />
+        </label>
+
+        <div className="grid md:grid-cols-2 gap-3">
+          <label className="block text-xs uppercase tracking-widest text-muted-foreground">
+            Preço Individual (R$)
+            <input
+              inputMode="decimal"
+              value={priceInput(form.individual_price_cents)}
+              onChange={(e) => set("individual_price_cents", parsePrice(e.target.value))}
+              placeholder="deixe vazio p/ usar preço do lote"
+              className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm normal-case tracking-normal"
+            />
+          </label>
+          <label className="block text-xs uppercase tracking-widest text-muted-foreground">
+            Preço Dupla p/ pessoa (R$)
+            <input
+              inputMode="decimal"
+              value={priceInput(form.dupla_price_cents)}
+              onChange={(e) => set("dupla_price_cents", parsePrice(e.target.value))}
+              placeholder="deixe vazio p/ usar preço do lote"
+              className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm normal-case tracking-normal"
+            />
+          </label>
+        </div>
+
+        <div className="pt-3 border-t border-border space-y-3">
+          <p className="text-xs uppercase tracking-widest text-muted-foreground">Link de cartão (opcional — sobrescreve o do lote)</p>
+          <label className="block text-[10px] uppercase tracking-widest text-muted-foreground">
+            Individual
+            <input
+              value={form.card_url_individual ?? ""}
+              onChange={(e) => set("card_url_individual", e.target.value || null)}
+              placeholder="https://link.infinitepay.io/..."
+              className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm normal-case tracking-normal"
+            />
+          </label>
+          <label className="block text-[10px] uppercase tracking-widest text-muted-foreground">
+            Dupla
+            <input
+              value={form.card_url_dupla ?? ""}
+              onChange={(e) => set("card_url_dupla", e.target.value || null)}
+              placeholder="https://link.infinitepay.io/..."
+              className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm normal-case tracking-normal"
+            />
+          </label>
+        </div>
+
+        <div className="pt-3 border-t border-border space-y-3">
+          <p className="text-xs uppercase tracking-widest text-muted-foreground">QR Code Pix (opcional — sobrescreve o do lote)</p>
+          <QrField
+            label="Individual"
+            value={form.pix_qr_individual_url ?? ""}
+            onChange={(v) => set("pix_qr_individual_url", v || null)}
+            folder={`coupons/${folderKey}/individual`}
+          />
+          <QrField
+            label="Dupla"
+            value={form.pix_qr_dupla_url ?? ""}
+            onChange={(v) => set("pix_qr_dupla_url", v || null)}
+            folder={`coupons/${folderKey}/dupla`}
+          />
+        </div>
+
+        <div className="pt-3 border-t border-border grid md:grid-cols-2 gap-3">
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={form.auto_confirm}
+              onChange={(e) => set("auto_confirm", e.target.checked)}
+            />
+            Confirmar inscrição automaticamente
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={form.active}
+              onChange={(e) => set("active", e.target.checked)}
+            />
+            Cupom ativo
+          </label>
+        </div>
+
+        <div className="flex gap-2 pt-2">
+          <button
+            onClick={onCancel}
+            disabled={saving}
+            className="flex-1 rounded-full border border-border py-2 text-xs uppercase tracking-widest hover:bg-secondary disabled:opacity-50"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex-1 rounded-full bg-primary text-primary-foreground py-2 text-xs uppercase tracking-widest hover:opacity-90 disabled:opacity-50"
+          >
+            {saving ? "Salvando…" : "Salvar"}
+          </button>
+        </div>
       </div>
     </div>
   );

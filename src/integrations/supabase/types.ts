@@ -14,36 +14,99 @@ export type Database = {
   }
   public: {
     Tables: {
+      coupons: {
+        Row: {
+          active: boolean
+          auto_confirm: boolean
+          card_url_dupla: string | null
+          card_url_individual: string | null
+          code: string
+          created_at: string
+          description: string | null
+          dupla_price_cents: number | null
+          id: string
+          individual_price_cents: number | null
+          pix_qr_dupla_url: string | null
+          pix_qr_individual_url: string | null
+          updated_at: string
+          valid_for: string
+        }
+        Insert: {
+          active?: boolean
+          auto_confirm?: boolean
+          card_url_dupla?: string | null
+          card_url_individual?: string | null
+          code: string
+          created_at?: string
+          description?: string | null
+          dupla_price_cents?: number | null
+          id?: string
+          individual_price_cents?: number | null
+          pix_qr_dupla_url?: string | null
+          pix_qr_individual_url?: string | null
+          updated_at?: string
+          valid_for?: string
+        }
+        Update: {
+          active?: boolean
+          auto_confirm?: boolean
+          card_url_dupla?: string | null
+          card_url_individual?: string | null
+          code?: string
+          created_at?: string
+          description?: string | null
+          dupla_price_cents?: number | null
+          id?: string
+          individual_price_cents?: number | null
+          pix_qr_dupla_url?: string | null
+          pix_qr_individual_url?: string | null
+          updated_at?: string
+          valid_for?: string
+        }
+        Relationships: []
+      }
       lots: {
         Row: {
           active: boolean
+          card_url_dupla: string | null
+          card_url_individual: string | null
           created_at: string
           dupla_price_cents: number
           id: string
           individual_price_cents: number
           label: string
+          pix_qr_dupla_url: string | null
+          pix_qr_individual_url: string | null
           sort_order: number
           total: number
           updated_at: string
         }
         Insert: {
           active?: boolean
+          card_url_dupla?: string | null
+          card_url_individual?: string | null
           created_at?: string
           dupla_price_cents: number
           id: string
           individual_price_cents: number
           label: string
+          pix_qr_dupla_url?: string | null
+          pix_qr_individual_url?: string | null
           sort_order?: number
           total: number
           updated_at?: string
         }
         Update: {
           active?: boolean
+          card_url_dupla?: string | null
+          card_url_individual?: string | null
           created_at?: string
           dupla_price_cents?: number
           id?: string
           individual_price_cents?: number
           label?: string
+          pix_qr_dupla_url?: string | null
+          pix_qr_individual_url?: string | null
           sort_order?: number
           total?: number
           updated_at?: string
