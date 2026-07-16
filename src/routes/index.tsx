@@ -507,6 +507,35 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
             </Field>
           </Section>
 
+          <Section title="Cupom de desconto">
+            {couponApplied ? (
+              <div className="flex items-center justify-between rounded-md border border-accent bg-accent/10 px-4 py-3 text-sm">
+                <span>
+                  Cupom <span className="font-semibold">{COUPON_CODE}</span> aplicado — valor do Lote 1.
+                </span>
+                <button type="button" onClick={removeCoupon} className="text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground">
+                  Remover
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <input
+                  value={couponInput}
+                  onChange={(e) => setCouponInput(e.target.value)}
+                  placeholder="Insira seu cupom"
+                  className={inputCls}
+                />
+                <button
+                  type="button"
+                  onClick={applyCoupon}
+                  className="rounded-md border border-primary px-4 py-2 text-xs uppercase tracking-widest text-primary hover:bg-primary hover:text-primary-foreground transition"
+                >
+                  Aplicar
+                </button>
+              </div>
+            )}
+          </Section>
+
           <Section title="Forma de pagamento">
             <div className="grid grid-cols-2 gap-3">
               {([
