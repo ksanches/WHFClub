@@ -870,7 +870,7 @@ function CouponsPanel({ coupons, onReload }: { coupons: Coupon[]; onReload: () =
     if (!payload.code) { toast.error("Informe o código"); return; }
     if ("id" in c) {
       const { error } = await supabase.from("coupons").update(payload).eq("id", c.id);
-      if (error) return toast.error(error.message);
+      if (error) { toast.error(error.message); return; }
       toast.success("Cupom atualizado");
     } else {
       const { error } = await supabase.from("coupons").insert(payload);
