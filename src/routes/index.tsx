@@ -397,8 +397,9 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
       partner_parq_q7: isDupla ? form.partnerParq[6] : null,
       partner_parq_notes: isDupla ? (form.partnerParqNotes || null) : null,
       event_suggestions: form.suggestions || null,
-      payment_method: paymentMethod,
-      payment_url: paymentMethod === "cartao" ? paymentUrl : "pix",
+      payment_method: isFree ? "cortesia" : paymentMethod,
+      payment_url: isFree ? COUPON_FREE : (paymentMethod === "cartao" ? paymentUrl : "pix"),
+      status: isFree ? "confirmado" : "pendente",
     });
     setSubmitting(false);
 
@@ -411,13 +412,20 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
 
     onSubmitted();
 
-    if (paymentMethod === "cartao") {
+    if (isFree) {
+      toast.success("Inscrição confirmada! Nos vemos no WHF.");
+      setFreeConfirmation(true);
+    } else if (paymentMethod === "cartao") {
       toast.success("Inscrição registrada! Finalize o pagamento.");
       setCardConfirmation(true);
     } else {
       toast.success("Inscrição registrada! Confira os dados do Pix.");
       setPixConfirmation(true);
     }
+  }
+
+  if (freeConfirmation) {
+    return <FreeScreen lotLabel={lot.label} onClose={onClose} />;
   }
 
   if (cardConfirmation) {
@@ -427,6 +435,7 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
   if (pixConfirmation) {
     return <PixScreen totalPrice={totalPrice} lotLabel={lot.label} typeLabel={isDupla ? "Dupla" : "Individual"} onClose={onClose} />;
   }
+
 
 
   return (
