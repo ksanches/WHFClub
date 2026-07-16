@@ -668,9 +668,12 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function PixScreen({ totalPrice, lotLabel, typeLabel, onClose }: { totalPrice: number; lotLabel: string; typeLabel: string; onClose: () => void }) {
+function PixScreen({ lotId, totalPrice, lotLabel, typeLabel, onClose }: { lotId: string; totalPrice: number; lotLabel: string; typeLabel: string; onClose: () => void }) {
   const isDupla = typeLabel.toLowerCase().includes("dupla");
-  const qr = isDupla ? pixDuplaAsset : pixIndividualAsset;
+  const isLote1 = lotId === "lote1";
+  const qr = isDupla
+    ? (isLote1 ? pixDuplaLote1Asset : pixDuplaAsset)
+    : (isLote1 ? pixIndividualLote1Asset : pixIndividualAsset);
   const waMessage = encodeURIComponent(
     `Olá! Segue o comprovante do Pix da inscrição WHF (${lotLabel} · ${typeLabel} · ${formatBRL(totalPrice)}).`
   );
