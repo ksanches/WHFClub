@@ -602,8 +602,8 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
                 : isFree
                   ? "Confirmar inscrição gratuita"
                   : paymentMethod === "cartao"
-                    ? `Finalizar e pagar · ${formatCents(Math.round(price * 100))}${isDupla ? " (por pessoa)" : ""}`
-                    : `Finalizar e ver dados do Pix · ${formatCents(Math.round(totalPrice * 100))}`}
+                    ? `Finalizar e pagar · ${formatCents(Math.round(totalPrice * 100))}${isDupla ? " (dupla)" : ""}`
+                    : `Finalizar e ver dados do Pix · ${formatCents(Math.round(totalPrice * 100))}${isDupla ? " (dupla)" : ""}`}
             </button>
             <button type="button" onClick={onClose} className="rounded-full border border-border px-6 py-3 text-sm uppercase tracking-widest hover:bg-secondary">
               Cancelar
