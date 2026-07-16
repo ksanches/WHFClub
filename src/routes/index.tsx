@@ -267,8 +267,10 @@ const initialForm: FormState = {
   suggestions: "",
 };
 
-const COUPON_CODE = "WHFVIP";
+const COUPON_LOTE1 = "WHFVIP";
+const COUPON_FREE = "INFLUWHF";
 const COUPON_LOT_ID = "lote1";
+type CouponKind = "lote1" | "free";
 
 function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { selection: Selection; occupancy: Record<string, number>; onClose: () => void; onSubmitted: () => void }) {
   const { lot: originalLot, type } = selection;
@@ -277,8 +279,9 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cartao");
   const [pixConfirmation, setPixConfirmation] = useState(false);
   const [cardConfirmation, setCardConfirmation] = useState(false);
+  const [freeConfirmation, setFreeConfirmation] = useState(false);
   const [couponInput, setCouponInput] = useState("");
-  const [couponApplied, setCouponApplied] = useState(false);
+  const [couponKind, setCouponKind] = useState<CouponKind | null>(null);
   const [lote1, setLote1] = useState<Lot | null>(originalLot.id === COUPON_LOT_ID ? originalLot : null);
 
   useEffect(() => {
@@ -302,29 +305,38 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
       });
   }, [originalLot]);
 
-  const lot = couponApplied && lote1 ? lote1 : originalLot;
+  const isFree = couponKind === "free";
+  const lot = couponKind === "lote1" && lote1 ? lote1 : originalLot;
   const paymentUrl = useMemo(() => paymentUrlFor(lot.id, type), [lot, type]);
-  const price = type === "individual" ? lot.individual : lot.dupla;
+  const basePrice = type === "individual" ? lot.individual : lot.dupla;
+  const price = isFree ? 0 : basePrice;
   const isDupla = type === "dupla";
-  const totalPrice = isDupla ? price * 2 : price;
+  const totalPrice = isFree ? 0 : (isDupla ? price * 2 : price);
   const seatsNeeded = isDupla ? 2 : 1;
   const availableTimes = CLASS_TIMES.filter((t) => (occupancy[t] ?? 0) + seatsNeeded <= CLASS_CAPACITY);
 
   function applyCoupon() {
-    if (couponInput.trim().toUpperCase() !== COUPON_CODE) {
-      toast.error("Cupom inválido.");
+    const code = couponInput.trim().toUpperCase();
+    if (code === COUPON_LOTE1) {
+      if (!lote1) { toast.error("Aguarde… carregando lote promocional."); return; }
+      setCouponKind("lote1");
+      toast.success("Cupom aplicado! Valor promocional do Lote 1 liberado.");
       return;
     }
-    if (!lote1) {
-      toast.error("Aguarde… carregando lote promocional.");
+    if (code === COUPON_FREE) {
+      if (type !== "individual") {
+        toast.error("Cupom INFLUWHF válido apenas para inscrição individual.");
+        return;
+      }
+      setCouponKind("free");
+      toast.success("Cupom aplicado! Sua inscrição individual será gratuita.");
       return;
     }
-    setCouponApplied(true);
-    toast.success("Cupom aplicado! Valor promocional do Lote 1 liberado.");
+    toast.error("Cupom inválido.");
   }
 
   function removeCoupon() {
-    setCouponApplied(false);
+    setCouponKind(null);
     setCouponInput("");
   }
 
