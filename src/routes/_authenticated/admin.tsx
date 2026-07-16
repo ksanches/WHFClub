@@ -309,6 +309,11 @@ function AdminPage() {
           </div>
         </section>
 
+        {/* Coupons */}
+        <CouponsPanel coupons={coupons} onReload={loadCoupons} />
+
+
+
         {/* Classes occupancy */}
         <section>
           <h2 className="font-display text-xl mb-4">Aulas</h2>
