@@ -1134,6 +1134,3 @@ function CouponEditor({
     </div>
   );
 }
-
-  );
-}
