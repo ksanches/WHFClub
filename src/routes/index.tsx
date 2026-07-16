@@ -21,6 +21,8 @@ import {
 import { getClassOccupancy } from "@/lib/occupancy.functions";
 import pixIndividualAsset from "@/assets/pix_individual.jpeg.asset.json";
 import pixDuplaAsset from "@/assets/pix_Dupla.jpeg.asset.json";
+import pixIndividualLote1Asset from "@/assets/pix_individual_lote1.jpeg.asset.json";
+import pixDuplaLote1Asset from "@/assets/pix_dupla_lote1.jpeg.asset.json";
 
 const WHATSAPP_URL = "https://wa.me/5511965008538";
 
@@ -433,7 +435,7 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
   }
 
   if (pixConfirmation) {
-    return <PixScreen totalPrice={totalPrice} lotLabel={lot.label} typeLabel={isDupla ? "Dupla" : "Individual"} onClose={onClose} />;
+    return <PixScreen lotId={lot.id} totalPrice={totalPrice} lotLabel={lot.label} typeLabel={isDupla ? "Dupla" : "Individual"} onClose={onClose} />;
   }
 
 
@@ -666,9 +668,12 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function PixScreen({ totalPrice, lotLabel, typeLabel, onClose }: { totalPrice: number; lotLabel: string; typeLabel: string; onClose: () => void }) {
+function PixScreen({ lotId, totalPrice, lotLabel, typeLabel, onClose }: { lotId: string; totalPrice: number; lotLabel: string; typeLabel: string; onClose: () => void }) {
   const isDupla = typeLabel.toLowerCase().includes("dupla");
-  const qr = isDupla ? pixDuplaAsset : pixIndividualAsset;
+  const isLote1 = lotId === "lote1";
+  const qr = isDupla
+    ? (isLote1 ? pixDuplaLote1Asset : pixDuplaAsset)
+    : (isLote1 ? pixIndividualLote1Asset : pixIndividualAsset);
   const waMessage = encodeURIComponent(
     `Olá! Segue o comprovante do Pix da inscrição WHF (${lotLabel} · ${typeLabel} · ${formatBRL(totalPrice)}).`
   );
