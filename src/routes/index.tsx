@@ -435,7 +435,7 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
   }
 
   if (pixConfirmation) {
-    return <PixScreen totalPrice={totalPrice} lotLabel={lot.label} typeLabel={isDupla ? "Dupla" : "Individual"} onClose={onClose} />;
+    return <PixScreen lotId={lot.id} totalPrice={totalPrice} lotLabel={lot.label} typeLabel={isDupla ? "Dupla" : "Individual"} onClose={onClose} />;
   }
 
 
