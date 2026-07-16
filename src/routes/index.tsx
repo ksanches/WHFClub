@@ -280,13 +280,8 @@ const initialForm: FormState = {
   suggestions: "",
 };
 
-const COUPON_LOTE1 = "WHFVIP";
-const COUPON_FREE = "INFLUWHF";
-const COUPON_LOT_ID = "lote1";
-type CouponKind = "lote1" | "free";
-
 function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { selection: Selection; occupancy: Record<string, number>; onClose: () => void; onSubmitted: () => void }) {
-  const { lot: originalLot, type } = selection;
+  const { lot, type } = selection;
   const [form, setForm] = useState<FormState>(initialForm);
   const [submitting, setSubmitting] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cartao");
@@ -294,64 +289,72 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
   const [cardConfirmation, setCardConfirmation] = useState(false);
   const [freeConfirmation, setFreeConfirmation] = useState(false);
   const [couponInput, setCouponInput] = useState("");
-  const [couponKind, setCouponKind] = useState<CouponKind | null>(null);
-  const [lote1, setLote1] = useState<Lot | null>(originalLot.id === COUPON_LOT_ID ? originalLot : null);
+  const [coupon, setCoupon] = useState<Coupon | null>(null);
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
 
-  useEffect(() => {
-    if (originalLot.id === COUPON_LOT_ID) return;
-    supabase
-      .from("lots")
-      .select("*")
-      .eq("id", COUPON_LOT_ID)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (!data) return;
-        setLote1({
-          id: data.id,
-          label: data.label,
-          total: data.total,
-          individual: data.individual_price_cents / 100,
-          dupla: data.dupla_price_cents / 100,
-          active: data.active,
-          sort_order: data.sort_order,
-        });
-      });
-  }, [originalLot]);
-
-  const isFree = couponKind === "free";
-  const lot = couponKind === "lote1" && lote1 ? lote1 : originalLot;
-  const paymentUrl = useMemo(() => paymentUrlFor(lot.id, type), [lot, type]);
-  const basePrice = type === "individual" ? lot.individual : lot.dupla;
-  const price = isFree ? 0 : basePrice;
   const isDupla = type === "dupla";
-  const totalPrice = isFree ? 0 : (isDupla ? price * 2 : price);
   const seatsNeeded = isDupla ? 2 : 1;
   const availableTimes = CLASS_TIMES.filter((t) => (occupancy[t] ?? 0) + seatsNeeded <= CLASS_CAPACITY);
 
-  function applyCoupon() {
+  const couponPriceCents = coupon
+    ? (type === "individual" ? coupon.individual_price_cents : coupon.dupla_price_cents)
+    : null;
+  const lotPrice = type === "individual" ? lot.individual : lot.dupla;
+  const price = couponPriceCents !== null && couponPriceCents !== undefined
+    ? couponPriceCents / 100
+    : lotPrice;
+  const totalPrice = isDupla ? price * 2 : price;
+  const isFree = !!coupon && totalPrice === 0;
+
+  const paymentUrl = useMemo(() => {
+    if (coupon) {
+      const c = type === "individual" ? coupon.card_url_individual : coupon.card_url_dupla;
+      if (c) return c;
+    }
+    const l = type === "individual" ? lot.card_url_individual : lot.card_url_dupla;
+    return l || "#";
+  }, [coupon, lot, type]);
+
+  const pixQrUrl = useMemo(() => {
+    if (coupon) {
+      const c = type === "individual" ? coupon.pix_qr_individual_url : coupon.pix_qr_dupla_url;
+      if (c) return c;
+    }
+    const l = type === "individual" ? lot.pix_qr_individual_url : lot.pix_qr_dupla_url;
+    if (l) return l;
+    if (lot.id === "lote1") {
+      return isDupla ? pixDuplaLote1Asset.url : pixIndividualLote1Asset.url;
+    }
+    return isDupla ? pixDuplaAsset.url : pixIndividualAsset.url;
+  }, [coupon, lot, type, isDupla]);
+
+  async function applyCoupon() {
     const code = couponInput.trim().toUpperCase();
-    if (code === COUPON_LOTE1) {
-      if (!lote1) { toast.error("Aguarde… carregando lote promocional."); return; }
-      setCouponKind("lote1");
-      toast.success("Cupom aplicado! Valor promocional do Lote 1 liberado.");
+    if (!code) { toast.error("Insira um cupom."); return; }
+    setApplyingCoupon(true);
+    const { data, error } = await supabase
+      .from("coupons")
+      .select("*")
+      .eq("code", code)
+      .eq("active", true)
+      .maybeSingle();
+    setApplyingCoupon(false);
+    if (error) { toast.error("Erro ao validar cupom."); return; }
+    if (!data) { toast.error("Cupom inválido."); return; }
+    const c = data as Coupon;
+    if (c.valid_for !== "both" && c.valid_for !== type) {
+      toast.error(`Cupom válido apenas para inscrição ${c.valid_for === "individual" ? "individual" : "em dupla"}.`);
       return;
     }
-    if (code === COUPON_FREE) {
-      if (type !== "individual") {
-        toast.error("Cupom INFLUWHF válido apenas para inscrição individual.");
-        return;
-      }
-      setCouponKind("free");
-      toast.success("Cupom aplicado! Sua inscrição individual será gratuita.");
-      return;
-    }
-    toast.error("Cupom inválido.");
+    setCoupon(c);
+    toast.success(`Cupom ${c.code} aplicado!`);
   }
 
   function removeCoupon() {
-    setCouponKind(null);
+    setCoupon(null);
     setCouponInput("");
   }
+
 
   function update<K extends keyof FormState>(k: K, v: FormState[K]) {
     setForm((f) => ({ ...f, [k]: v }));
