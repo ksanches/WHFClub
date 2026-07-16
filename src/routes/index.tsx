@@ -520,10 +520,10 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
           </Section>
 
           <Section title="Cupom de desconto">
-            {couponApplied ? (
+            {couponKind ? (
               <div className="flex items-center justify-between rounded-md border border-accent bg-accent/10 px-4 py-3 text-sm">
                 <span>
-                  Cupom <span className="font-semibold">{COUPON_CODE}</span> aplicado — valor do Lote 1.
+                  Cupom <span className="font-semibold">{couponKind === "free" ? COUPON_FREE : COUPON_LOTE1}</span> aplicado — {couponKind === "free" ? "inscrição gratuita." : "valor do Lote 1."}
                 </span>
                 <button type="button" onClick={removeCoupon} className="text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground">
                   Remover
