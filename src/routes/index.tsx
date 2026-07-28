@@ -249,7 +249,7 @@ function Footer() {
   return (
     <footer className="bg-primary text-primary-foreground/80 py-10 text-center">
       <p className="italic-serif text-accent text-sm">"Mulher com tribo chega mais longe."</p>
-      <p className="mt-4 text-xs uppercase tracking-widest">WHF · São Paulo</p>
+      <p className="mt-4 wordmark text-xs">WHF · São Paulo</p>
       <p className="mt-4"><Link to="/auth" className="text-[10px] uppercase tracking-widest text-primary-foreground/50 hover:text-accent">Admin</Link></p>
     </footer>
   );
