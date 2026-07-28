@@ -79,18 +79,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "Treino Funcional WHF: 01/08/2026 às 11h no Playa SP Chácara. Ingresso individual por R$ 29,00, pagamento via Pix. Vagas limitadas.",
+          "Treino Funcional WHF: 01/08/2026 às 11h no Playa SP Chácara, Rua Branco de Morais, 31 — Chácara Santo Antônio. Ingresso individual por R$ 29,90, pagamento via Pix.",
       },
       { name: "author", content: "WHF Club" },
       { property: "og:title", content: "WANNA HAVE FUN — Treino Funcional · 01/08 · Playa SP Chácara" },
       {
         property: "og:description",
-        content: "Treino Funcional WHF: 01/08/2026 às 11h no Playa SP Chácara. Ingresso individual por R$ 29,00, pagamento via Pix.",
+        content: "Treino Funcional WHF: 01/08/2026 às 11h no Playa SP Chácara, Rua Branco de Morais, 31 — Chácara Santo Antônio. Ingresso individual por R$ 29,90, pagamento via Pix.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "WANNA HAVE FUN — Treino Funcional · 01/08 · Playa SP Chácara" },
-      { name: "twitter:description", content: "Treino Funcional WHF: 01/08/2026 às 11h no Playa SP Chácara. Ingresso individual por R$ 29,00, pagamento via Pix." },
+      { name: "twitter:description", content: "Treino Funcional WHF: 01/08/2026 às 11h no Playa SP Chácara, Rua Branco de Morais, 31 — Chácara Santo Antônio. Ingresso individual por R$ 29,90, pagamento via Pix." },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

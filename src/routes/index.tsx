@@ -160,7 +160,14 @@ function EventInfo() {
       <div className="mx-auto max-w-5xl grid md:grid-cols-3 gap-8 px-6 py-16">
         <InfoBlock label="Data" value="01 de Agosto" />
         <InfoBlock label="Aula" value="11h" />
-        <InfoBlock label="Local" value="Playa SP Chácara" />
+        <InfoBlock
+          label="Local"
+          value="Playa SP Chácara"
+          href="https://www.google.com/maps/search/?api=1&query=Rua+Branco+de+Morais+31+-+Chácara+Santo+Antônio,+São+Paulo"
+        />
+      </div>
+      <div className="mx-auto max-w-5xl px-6 pb-16 text-center">
+        <p className="text-sm text-accent/90">Rua Branco de Morais, 31 — Chácara Santo Antônio, São Paulo</p>
       </div>
     </section>
   );
