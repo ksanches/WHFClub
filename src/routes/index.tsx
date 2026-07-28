@@ -123,7 +123,7 @@ function Hero({ onPickLot }: { onPickLot: () => void }) {
         backgroundImage: "radial-gradient(circle at 20% 10%, var(--gold) 0, transparent 40%), radial-gradient(circle at 80% 90%, var(--gold) 0, transparent 40%)",
       }} />
       <div className="relative mx-auto max-w-5xl px-6 pt-16 pb-20 md:pt-24 md:pb-28 text-center">
-        <div className="mx-auto mb-8 wax-seal">WHF</div>
+        <div className="mx-auto mb-8 wax-seal wordmark text-xl">WHF</div>
         <p className="italic-serif text-accent tracking-widest text-xs md:text-sm uppercase">{"\n"}</p>
         <h1 className="wordmark mt-6 text-4xl md:text-6xl leading-tight">Wanna<br />Have Fun.</h1>
         <p className="italic-serif mt-8 text-lg md:text-2xl text-accent">"Treinar é o plano. Se divertir é a regra."</p>
