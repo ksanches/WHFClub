@@ -177,7 +177,7 @@ function InfoBlock({ label, value, href }: { label: string; value: string; href?
   const content = (
     <>
       <p className="text-xs uppercase tracking-[0.3em] text-accent">{label}</p>
-      <p className="mt-3 font-display text-3xl md:text-4xl">{value}</p>
+      <p className="mt-3 font-display text-3xl md:text-4xl whitespace-pre-line">{value}</p>
     </>
   );
   return (
