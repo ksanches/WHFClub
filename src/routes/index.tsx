@@ -19,10 +19,6 @@ import {
   type PaymentMethod,
 } from "@/lib/whf";
 import { getClassOccupancy } from "@/lib/occupancy.functions";
-import pixIndividualAsset from "@/assets/pix_individual.jpeg.asset.json";
-import pixDuplaAsset from "@/assets/pix_Dupla.jpeg.asset.json";
-import pixIndividualLote1Asset from "@/assets/pix_individual_lote1.jpeg.asset.json";
-import pixDuplaLote1Asset from "@/assets/pix_dupla_lote1.jpeg.asset.json";
 
 const WHATSAPP_URL = "https://wa.me/5511965008538";
 
