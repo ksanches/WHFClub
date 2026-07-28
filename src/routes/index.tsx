@@ -705,13 +705,19 @@ function PixScreen({ qrUrl, totalPrice, lotLabel, typeLabel, onClose }: { qrUrl:
             <li>Envie o comprovante pelo WhatsApp para confirmarmos sua inscrição.</li>
           </ol>
 
-          <div className="rounded-md border border-border bg-white p-3 flex items-center justify-center">
-            <img
-              src={qrUrl}
-              alt={`QR Code Pix — ${typeLabel} — ${formatBRL(totalPrice)}`}
-              className="w-full max-w-xs h-auto"
-            />
-          </div>
+          {qrUrl ? (
+            <div className="rounded-md border border-border bg-white p-3 flex items-center justify-center">
+              <img
+                src={qrUrl}
+                alt={`QR Code Pix — ${typeLabel} — ${formatBRL(totalPrice)}`}
+                className="w-full max-w-xs h-auto"
+              />
+            </div>
+          ) : (
+            <div className="rounded-md border border-border bg-secondary/60 p-4 text-sm text-muted-foreground text-center">
+              O QR Code do Pix será enviado pelo WhatsApp. Fale com a gente no botão abaixo.
+            </div>
+          )}
 
 
           <p className="text-xs text-center text-muted-foreground">
