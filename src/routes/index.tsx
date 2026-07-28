@@ -126,9 +126,10 @@ function Hero({ onPickLot }: { onPickLot: () => void }) {
       }} />
       <div className="relative mx-auto max-w-5xl px-6 pt-16 pb-20 md:pt-24 md:pb-28 text-center">
         <div className="mx-auto mb-8 wax-seal">WHF</div>
-        <p className="italic-serif text-accent tracking-widest text-xs md:text-sm uppercase">Save the date · 25.07</p>
-        <h1 className="mt-4 font-display text-5xl md:text-7xl leading-none">WANNA<br />HAVE FUN.</h1>
-        <p className="italic-serif mt-6 text-lg md:text-2xl text-accent">"Treinar é o plano. Se divertir é a regra."</p>
+        <p className="italic-serif text-accent tracking-widest text-xs md:text-sm uppercase">Save the date · 01.08</p>
+        <h1 className="wordmark mt-6 text-4xl md:text-6xl leading-tight">Wanna<br />Have Fun.</h1>
+        <p className="italic-serif mt-8 text-lg md:text-2xl text-accent">"Treinar é o plano. Se divertir é a regra."</p>
+        <p className="mt-4 font-display text-2xl md:text-3xl">Treino Funcional</p>
         <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
           <button onClick={onPickLot} className="rounded-full bg-accent px-8 py-3 text-sm font-semibold uppercase tracking-widest text-primary hover:opacity-90 transition">
             Garantir meu ingresso
@@ -137,7 +138,7 @@ function Hero({ onPickLot }: { onPickLot: () => void }) {
             Sobre o evento
           </a>
         </div>
-        <p className="mt-10 text-xs uppercase tracking-[0.3em] text-accent/80">You Smile Fight · São Paulo</p>
+        <p className="mt-10 text-xs uppercase tracking-[0.3em] text-accent/80">Playa SP Chácara · São Paulo</p>
       </div>
     </header>
   );
@@ -159,9 +160,9 @@ function EventInfo() {
   return (
     <section id="info" className="bg-primary text-primary-foreground">
       <div className="mx-auto max-w-5xl grid md:grid-cols-3 gap-8 px-6 py-16">
-        <InfoBlock label="Data" value="25 de Julho" />
-        <InfoBlock label="Aulas" value="11h ou 12h" />
-        <InfoBlock label="Local" value="You Smile Fight" href="https://www.instagram.com/yousmilefight?igsh=MWR4Njl3NWJ6MXBhZg==" />
+        <InfoBlock label="Data" value="01 de Agosto" />
+        <InfoBlock label="Aula" value="11h" />
+        <InfoBlock label="Local" value="Playa SP Chácara" />
       </div>
     </section>
   );
@@ -179,7 +180,6 @@ function InfoBlock({ label, value, href }: { label: string; value: string; href?
       {href ? (
         <a href={href} target="_blank" rel="noopener noreferrer" className="hover:opacity-90">
           {content}
-          <span className="mt-2 inline-block text-[10px] uppercase tracking-widest text-accent/80">@yousmilefight ↗</span>
         </a>
       ) : content}
     </div>
@@ -189,12 +189,12 @@ function InfoBlock({ label, value, href }: { label: string; value: string; href?
 function Lots({ lots, loading, onSelect }: { lots: Lot[]; loading: boolean; onSelect: (lot: Lot, type: TicketType) => void }) {
   const active = lots.filter((l) => l.active);
   return (
-    <section id="lotes" className="mx-auto max-w-6xl px-6 py-20">
+    <section id="lotes" className="mx-auto max-w-3xl px-6 py-20">
       <div className="text-center mb-14">
         <p className="italic-serif text-accent uppercase tracking-widest text-xs">Ingressos</p>
         <h2 className="mt-2 font-display text-4xl md:text-5xl">Reserve sua Vaga</h2>
         <p className="mt-4 text-sm text-muted-foreground max-w-xl mx-auto">
-          Individual ou em dupla — venha com uma amiga e pague menos. Vagas limitadas.
+          Ingresso individual · pagamento via Pix. Vagas limitadas.
         </p>
       </div>
 
@@ -203,7 +203,7 @@ function Lots({ lots, loading, onSelect }: { lots: Lot[]; loading: boolean; onSe
       ) : active.length === 0 ? (
         <p className="text-center text-muted-foreground">Nenhum lote disponível no momento.</p>
       ) : (
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid gap-6">
           {active.map((lot) => <LotCard key={lot.id} lot={lot} onSelect={onSelect} />)}
         </div>
       )}
@@ -215,10 +215,9 @@ function LotCard({ lot, onSelect }: { lot: Lot; onSelect: (lot: Lot, type: Ticke
   return (
     <article className="relative rounded-lg border border-accent/30 bg-card p-8 shadow-sm hover:shadow-md transition">
       <div className="absolute -top-3 left-6 bg-primary text-primary-foreground px-3 py-1 text-[10px] uppercase tracking-widest">{lot.label}</div>
-      
+
       <div className="mt-6 space-y-4">
         <PriceRow title="Individual" price={formatBRL(lot.individual)} onClick={() => onSelect(lot, "individual")} />
-        <PriceRow title="Dupla" subtitle="cada" price={formatBRL(lot.dupla)} highlight onClick={() => onSelect(lot, "dupla")} />
       </div>
     </article>
   );
