@@ -122,7 +122,7 @@ function Hero({ onPickLot }: { onPickLot: () => void }) {
       }} />
       <div className="relative mx-auto max-w-5xl px-6 pt-16 pb-20 md:pt-24 md:pb-28 text-center">
         <div className="mx-auto mb-8 wax-seal">WHF</div>
-        <p className="italic-serif text-accent tracking-widest text-xs md:text-sm uppercase">Save the date · 01.08</p>
+        <p className="italic-serif text-accent tracking-widest text-xs md:text-sm uppercase">{"\n"}</p>
         <h1 className="wordmark mt-6 text-4xl md:text-6xl leading-tight">Wanna<br />Have Fun.</h1>
         <p className="italic-serif mt-8 text-lg md:text-2xl text-accent">"Treinar é o plano. Se divertir é a regra."</p>
         <p className="mt-4 font-display text-2xl md:text-3xl">Treino Funcional</p>
@@ -145,7 +145,7 @@ function Manifesto() {
     <section className="mx-auto max-w-3xl px-6 py-20 text-center">
       <p className="italic-serif text-2xl md:text-3xl leading-snug text-foreground">
         Aqui ninguém precisa se provar pra pertencer.<br />
-        A atividade é o pretexto. A força coletiva é o produto.
+        {"\n"}
       </p>
       <div className="mt-8 mx-auto h-px w-24 bg-accent/60" />
     </section>
@@ -190,7 +190,8 @@ function Lots({ lots, loading, onSelect }: { lots: Lot[]; loading: boolean; onSe
         <p className="italic-serif text-accent uppercase tracking-widest text-xs">Ingressos</p>
         <h2 className="mt-2 font-display text-4xl md:text-5xl">Reserve sua Vaga</h2>
         <p className="mt-4 text-sm text-muted-foreground max-w-xl mx-auto">
-          Ingresso individual · pagamento via Pix. Vagas limitadas.
+          Ingresso individual · pagamento via Pix.&nbsp;{"\n"}
+          Vagas limitadas.
         </p>
       </div>
 
