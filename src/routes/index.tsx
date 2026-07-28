@@ -674,7 +674,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function PixScreen({ qrUrl, totalPrice, lotLabel, typeLabel, onClose }: { qrUrl: string; totalPrice: number; lotLabel: string; typeLabel: string; onClose: () => void }) {
+function PixScreen({ qrUrl, totalPrice, lotLabel, typeLabel, onClose }: { qrUrl: string | null; totalPrice: number; lotLabel: string; typeLabel: string; onClose: () => void }) {
   const waMessage = encodeURIComponent(
     `Olá! Segue o comprovante do Pix da inscrição WHF (${lotLabel} · ${typeLabel} · ${formatBRL(totalPrice)}).`
   );
