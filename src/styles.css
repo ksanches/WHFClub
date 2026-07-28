@@ -10,7 +10,7 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
-  --font-display: "Times New Roman", "Times", "EB Garamond", Georgia, serif;
+  --font-display: "Playfair Display", Georgia, serif;
   --font-sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
 
   --color-background: var(--background);
