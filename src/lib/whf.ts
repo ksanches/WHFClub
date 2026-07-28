@@ -51,14 +51,17 @@ export function paymentUrlFor(lotId: string, type: TicketType): string {
 
 export type PaymentMethod = "cartao" | "pix";
 
-// Dados do Pix — a confirmar
+// Pix copia e cola (R$ 29,90)
+export const PIX_COPY_PASTE =
+  "00020126510014BR.GOV.BCB.PIX0129whfclub.comercial@hotmail.com520400005303986540529.905802BR592535.952.024 EDUARDA BARCEL6009SAO PAULO62140510YNqHWGH9QR63048F0C";
+
 export const PIX_INFO = {
-  key: "A confirmar",
-  keyType: "A confirmar",
-  beneficiary: "A confirmar",
-  bank: "A confirmar",
+  key: "whfclub.comercial@hotmail.com",
+  keyType: "E-mail",
+  beneficiary: "35.952.024 EDUARDA BARCELLOS CHAMBARELLI DE NOVAES",
+  bank: "—",
   instructions:
-    "Após efetuar o Pix, envie o comprovante para o Instagram @yousmilefight para confirmarmos sua inscrição.",
+    "Após efetuar o Pix, envie o comprovante pelo WhatsApp para confirmarmos sua inscrição.",
 };
 
 
