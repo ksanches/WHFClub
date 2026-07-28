@@ -12,6 +12,8 @@ import {
   maskPhone,
   isValidMobileBR,
   PARQ_QUESTIONS,
+  PIX_COPY_PASTE,
+  PIX_INFO,
 
   type Lot,
   type Coupon,
