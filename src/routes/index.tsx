@@ -174,11 +174,12 @@ function EventInfo() {
   );
 }
 
-function InfoBlock({ label, value, href }: { label: string; value: string; href?: string }) {
+function InfoBlock({ label, value, sub, href }: { label: string; value: string; sub?: string; href?: string }) {
   const content = (
     <>
       <p className="text-xs uppercase tracking-[0.3em] text-accent">{label}</p>
       <p className="mt-3 font-display text-3xl md:text-4xl whitespace-pre-line">{value}</p>
+      {sub && <p className="mt-2 text-sm text-accent/80 whitespace-pre-line">{sub}</p>}
     </>
   );
   return (
