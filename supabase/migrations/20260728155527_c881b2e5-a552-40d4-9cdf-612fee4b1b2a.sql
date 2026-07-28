@@ -1,0 +1,1 @@
+UPDATE public.lots SET individual_price_cents = 2990 WHERE label = 'Lote 1' OR sort_order = 1;
