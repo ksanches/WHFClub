@@ -19,10 +19,6 @@ import {
   type PaymentMethod,
 } from "@/lib/whf";
 import { getClassOccupancy } from "@/lib/occupancy.functions";
-import pixIndividualAsset from "@/assets/pix_individual.jpeg.asset.json";
-import pixDuplaAsset from "@/assets/pix_Dupla.jpeg.asset.json";
-import pixIndividualLote1Asset from "@/assets/pix_individual_lote1.jpeg.asset.json";
-import pixDuplaLote1Asset from "@/assets/pix_dupla_lote1.jpeg.asset.json";
 
 const WHATSAPP_URL = "https://wa.me/5511965008538";
 
@@ -126,9 +122,10 @@ function Hero({ onPickLot }: { onPickLot: () => void }) {
       }} />
       <div className="relative mx-auto max-w-5xl px-6 pt-16 pb-20 md:pt-24 md:pb-28 text-center">
         <div className="mx-auto mb-8 wax-seal">WHF</div>
-        <p className="italic-serif text-accent tracking-widest text-xs md:text-sm uppercase">Save the date · 25.07</p>
-        <h1 className="mt-4 font-display text-5xl md:text-7xl leading-none">WANNA<br />HAVE FUN.</h1>
-        <p className="italic-serif mt-6 text-lg md:text-2xl text-accent">"Treinar é o plano. Se divertir é a regra."</p>
+        <p className="italic-serif text-accent tracking-widest text-xs md:text-sm uppercase">Save the date · 01.08</p>
+        <h1 className="wordmark mt-6 text-4xl md:text-6xl leading-tight">Wanna<br />Have Fun.</h1>
+        <p className="italic-serif mt-8 text-lg md:text-2xl text-accent">"Treinar é o plano. Se divertir é a regra."</p>
+        <p className="mt-4 font-display text-2xl md:text-3xl">Treino Funcional</p>
         <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
           <button onClick={onPickLot} className="rounded-full bg-accent px-8 py-3 text-sm font-semibold uppercase tracking-widest text-primary hover:opacity-90 transition">
             Garantir meu ingresso
@@ -137,7 +134,7 @@ function Hero({ onPickLot }: { onPickLot: () => void }) {
             Sobre o evento
           </a>
         </div>
-        <p className="mt-10 text-xs uppercase tracking-[0.3em] text-accent/80">You Smile Fight · São Paulo</p>
+        <p className="mt-10 text-xs uppercase tracking-[0.3em] text-accent/80">Playa SP Chácara · São Paulo</p>
       </div>
     </header>
   );
@@ -159,9 +156,9 @@ function EventInfo() {
   return (
     <section id="info" className="bg-primary text-primary-foreground">
       <div className="mx-auto max-w-5xl grid md:grid-cols-3 gap-8 px-6 py-16">
-        <InfoBlock label="Data" value="25 de Julho" />
-        <InfoBlock label="Aulas" value="11h ou 12h" />
-        <InfoBlock label="Local" value="You Smile Fight" href="https://www.instagram.com/yousmilefight?igsh=MWR4Njl3NWJ6MXBhZg==" />
+        <InfoBlock label="Data" value="01 de Agosto" />
+        <InfoBlock label="Aula" value="11h" />
+        <InfoBlock label="Local" value="Playa SP Chácara" />
       </div>
     </section>
   );
@@ -179,7 +176,6 @@ function InfoBlock({ label, value, href }: { label: string; value: string; href?
       {href ? (
         <a href={href} target="_blank" rel="noopener noreferrer" className="hover:opacity-90">
           {content}
-          <span className="mt-2 inline-block text-[10px] uppercase tracking-widest text-accent/80">@yousmilefight ↗</span>
         </a>
       ) : content}
     </div>
@@ -189,12 +185,12 @@ function InfoBlock({ label, value, href }: { label: string; value: string; href?
 function Lots({ lots, loading, onSelect }: { lots: Lot[]; loading: boolean; onSelect: (lot: Lot, type: TicketType) => void }) {
   const active = lots.filter((l) => l.active);
   return (
-    <section id="lotes" className="mx-auto max-w-6xl px-6 py-20">
+    <section id="lotes" className="mx-auto max-w-3xl px-6 py-20">
       <div className="text-center mb-14">
         <p className="italic-serif text-accent uppercase tracking-widest text-xs">Ingressos</p>
         <h2 className="mt-2 font-display text-4xl md:text-5xl">Reserve sua Vaga</h2>
         <p className="mt-4 text-sm text-muted-foreground max-w-xl mx-auto">
-          Individual ou em dupla — venha com uma amiga e pague menos. Vagas limitadas.
+          Ingresso individual · pagamento via Pix. Vagas limitadas.
         </p>
       </div>
 
@@ -203,7 +199,7 @@ function Lots({ lots, loading, onSelect }: { lots: Lot[]; loading: boolean; onSe
       ) : active.length === 0 ? (
         <p className="text-center text-muted-foreground">Nenhum lote disponível no momento.</p>
       ) : (
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid gap-6">
           {active.map((lot) => <LotCard key={lot.id} lot={lot} onSelect={onSelect} />)}
         </div>
       )}
@@ -215,10 +211,9 @@ function LotCard({ lot, onSelect }: { lot: Lot; onSelect: (lot: Lot, type: Ticke
   return (
     <article className="relative rounded-lg border border-accent/30 bg-card p-8 shadow-sm hover:shadow-md transition">
       <div className="absolute -top-3 left-6 bg-primary text-primary-foreground px-3 py-1 text-[10px] uppercase tracking-widest">{lot.label}</div>
-      
+
       <div className="mt-6 space-y-4">
         <PriceRow title="Individual" price={formatBRL(lot.individual)} onClick={() => onSelect(lot, "individual")} />
-        <PriceRow title="Dupla" subtitle="cada" price={formatBRL(lot.dupla)} highlight onClick={() => onSelect(lot, "dupla")} />
       </div>
     </article>
   );
@@ -284,7 +279,7 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
   const { lot, type } = selection;
   const [form, setForm] = useState<FormState>(initialForm);
   const [submitting, setSubmitting] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cartao");
+  const [paymentMethod] = useState<PaymentMethod>("pix");
   const [pixConfirmation, setPixConfirmation] = useState(false);
   const [cardConfirmation, setCardConfirmation] = useState(false);
   const [freeConfirmation, setFreeConfirmation] = useState(false);
@@ -316,18 +311,14 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
     return l || "#";
   }, [coupon, lot, type]);
 
-  const pixQrUrl = useMemo(() => {
+  const pixQrUrl = useMemo<string | null>(() => {
     if (coupon) {
       const c = type === "individual" ? coupon.pix_qr_individual_url : coupon.pix_qr_dupla_url;
       if (c) return c;
     }
     const l = type === "individual" ? lot.pix_qr_individual_url : lot.pix_qr_dupla_url;
-    if (l) return l;
-    if (lot.id === "lote1") {
-      return isDupla ? pixDuplaLote1Asset.url : pixIndividualLote1Asset.url;
-    }
-    return isDupla ? pixDuplaAsset.url : pixIndividualAsset.url;
-  }, [coupon, lot, type, isDupla]);
+    return l || null;
+  }, [coupon, lot, type]);
 
   async function applyCoupon() {
     const code = couponInput.trim().toUpperCase();
@@ -585,20 +576,11 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
 
           {!isFree && (
             <Section title="Forma de pagamento">
-              <div className="grid grid-cols-2 gap-3">
-                {([
-                  { id: "cartao", label: "Cartão", hint: "InfinityPay" },
-                  { id: "pix", label: "Pix", hint: "Transferência" },
-                ] as const).map((opt) => {
-                  const selected = paymentMethod === opt.id;
-                  return (
-                    <label key={opt.id} className={`cursor-pointer text-center rounded-md border p-3 transition ${selected ? "border-accent bg-accent/10" : "border-border hover:border-accent"}`}>
-                      <input type="radio" name="paymentMethod" value={opt.id} checked={selected} onChange={() => setPaymentMethod(opt.id)} className="sr-only" />
-                      <span className="block font-display text-lg">{opt.label}</span>
-                      <span className="block text-[10px] uppercase tracking-widest text-muted-foreground">{opt.hint}</span>
-                    </label>
-                  );
-                })}
+              <div className="rounded-md border border-accent bg-accent/10 p-4 text-center">
+                <span className="block font-display text-lg">Pix</span>
+                <span className="block text-[10px] uppercase tracking-widest text-muted-foreground">
+                  Única forma de pagamento
+                </span>
               </div>
             </Section>
           )}
@@ -692,7 +674,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function PixScreen({ qrUrl, totalPrice, lotLabel, typeLabel, onClose }: { qrUrl: string; totalPrice: number; lotLabel: string; typeLabel: string; onClose: () => void }) {
+function PixScreen({ qrUrl, totalPrice, lotLabel, typeLabel, onClose }: { qrUrl: string | null; totalPrice: number; lotLabel: string; typeLabel: string; onClose: () => void }) {
   const waMessage = encodeURIComponent(
     `Olá! Segue o comprovante do Pix da inscrição WHF (${lotLabel} · ${typeLabel} · ${formatBRL(totalPrice)}).`
   );
@@ -723,13 +705,19 @@ function PixScreen({ qrUrl, totalPrice, lotLabel, typeLabel, onClose }: { qrUrl:
             <li>Envie o comprovante pelo WhatsApp para confirmarmos sua inscrição.</li>
           </ol>
 
-          <div className="rounded-md border border-border bg-white p-3 flex items-center justify-center">
-            <img
-              src={qrUrl}
-              alt={`QR Code Pix — ${typeLabel} — ${formatBRL(totalPrice)}`}
-              className="w-full max-w-xs h-auto"
-            />
-          </div>
+          {qrUrl ? (
+            <div className="rounded-md border border-border bg-white p-3 flex items-center justify-center">
+              <img
+                src={qrUrl}
+                alt={`QR Code Pix — ${typeLabel} — ${formatBRL(totalPrice)}`}
+                className="w-full max-w-xs h-auto"
+              />
+            </div>
+          ) : (
+            <div className="rounded-md border border-border bg-secondary/60 p-4 text-sm text-muted-foreground text-center">
+              O QR Code do Pix será enviado pelo WhatsApp. Fale com a gente no botão abaixo.
+            </div>
+          )}
 
 
           <p className="text-xs text-center text-muted-foreground">

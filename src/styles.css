@@ -10,7 +10,7 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
-  --font-display: "Times New Roman", "Times", "EB Garamond", Georgia, serif;
+  --font-display: "Playfair Display", Georgia, serif;
   --font-sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
 
   --color-background: var(--background);
@@ -107,7 +107,16 @@
 
   h1, h2, h3, h4, .font-display {
     font-family: var(--font-display);
+    font-weight: 400;
     letter-spacing: -0.01em;
+  }
+
+  .wordmark {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-style: normal;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
   }
 
   .italic-serif {
