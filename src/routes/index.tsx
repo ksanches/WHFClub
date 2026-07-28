@@ -584,20 +584,11 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
 
           {!isFree && (
             <Section title="Forma de pagamento">
-              <div className="grid grid-cols-2 gap-3">
-                {([
-                  { id: "cartao", label: "Cartão", hint: "InfinityPay" },
-                  { id: "pix", label: "Pix", hint: "Transferência" },
-                ] as const).map((opt) => {
-                  const selected = paymentMethod === opt.id;
-                  return (
-                    <label key={opt.id} className={`cursor-pointer text-center rounded-md border p-3 transition ${selected ? "border-accent bg-accent/10" : "border-border hover:border-accent"}`}>
-                      <input type="radio" name="paymentMethod" value={opt.id} checked={selected} onChange={() => setPaymentMethod(opt.id)} className="sr-only" />
-                      <span className="block font-display text-lg">{opt.label}</span>
-                      <span className="block text-[10px] uppercase tracking-widest text-muted-foreground">{opt.hint}</span>
-                    </label>
-                  );
-                })}
+              <div className="rounded-md border border-accent bg-accent/10 p-4 text-center">
+                <span className="block font-display text-lg">Pix</span>
+                <span className="block text-[10px] uppercase tracking-widest text-muted-foreground">
+                  Única forma de pagamento
+                </span>
               </div>
             </Section>
           )}
