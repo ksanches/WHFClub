@@ -315,18 +315,14 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
     return l || "#";
   }, [coupon, lot, type]);
 
-  const pixQrUrl = useMemo(() => {
+  const pixQrUrl = useMemo<string | null>(() => {
     if (coupon) {
       const c = type === "individual" ? coupon.pix_qr_individual_url : coupon.pix_qr_dupla_url;
       if (c) return c;
     }
     const l = type === "individual" ? lot.pix_qr_individual_url : lot.pix_qr_dupla_url;
-    if (l) return l;
-    if (lot.id === "lote1") {
-      return isDupla ? pixDuplaLote1Asset.url : pixIndividualLote1Asset.url;
-    }
-    return isDupla ? pixDuplaAsset.url : pixIndividualAsset.url;
-  }, [coupon, lot, type, isDupla]);
+    return l || null;
+  }, [coupon, lot, type]);
 
   async function applyCoupon() {
     const code = couponInput.trim().toUpperCase();
