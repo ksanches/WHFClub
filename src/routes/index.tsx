@@ -162,7 +162,8 @@ function EventInfo() {
         <InfoBlock label="Aula" value="11h" />
         <InfoBlock
           label="Local"
-          value={`Playa SP Chácara\nRua Branco de Morais, 31\u00a0\n\u00a0Chácara Santo Antônio, São Paulo`}
+          value="Playa SP Chácara"
+          sub="Rua Branco de Morais, 31 — Chácara Santo Antônio, São Paulo"
           href="https://www.google.com/maps/search/?api=1&query=Rua+Branco+de+Morais+31+-+Chácara+Santo+Antônio,+São+Paulo"
         />
       </div>
@@ -173,11 +174,12 @@ function EventInfo() {
   );
 }
 
-function InfoBlock({ label, value, href }: { label: string; value: string; href?: string }) {
+function InfoBlock({ label, value, sub, href }: { label: string; value: string; sub?: string; href?: string }) {
   const content = (
     <>
       <p className="text-xs uppercase tracking-[0.3em] text-accent">{label}</p>
       <p className="mt-3 font-display text-3xl md:text-4xl whitespace-pre-line">{value}</p>
+      {sub && <p className="mt-2 text-sm text-accent/80 whitespace-pre-line">{sub}</p>}
     </>
   );
   return (
