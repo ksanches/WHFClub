@@ -283,7 +283,7 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
   const { lot, type } = selection;
   const [form, setForm] = useState<FormState>(initialForm);
   const [submitting, setSubmitting] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cartao");
+  const [paymentMethod] = useState<PaymentMethod>("pix");
   const [pixConfirmation, setPixConfirmation] = useState(false);
   const [cardConfirmation, setCardConfirmation] = useState(false);
   const [freeConfirmation, setFreeConfirmation] = useState(false);
