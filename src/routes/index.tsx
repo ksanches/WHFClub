@@ -499,9 +499,6 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
                     <label key={t} className={`flex-1 cursor-pointer text-center rounded-md border p-3 transition ${form.classTime === t ? "border-accent bg-accent/10" : "border-border hover:border-accent"}`}>
                       <input type="radio" name="classTime" value={t} checked={form.classTime === t} onChange={() => update("classTime", t)} className="sr-only" />
                       <span className="font-display text-lg">{t}</span>
-                      <span className="block text-[10px] uppercase tracking-widest text-muted-foreground mt-1">
-                        {CLASS_CAPACITY - (occupancy[t] ?? 0)} vagas
-                      </span>
                     </label>
                   ))}
                 </div>
