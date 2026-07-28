@@ -162,12 +162,12 @@ function EventInfo() {
         <InfoBlock label="Aula" value="11h" />
         <InfoBlock
           label="Local"
-          value="Playa SP Chácara"
+          value={`Playa SP Chácara\nRua Branco de Morais, 31\u00a0\n\u00a0Chácara Santo Antônio, São Paulo`}
           href="https://www.google.com/maps/search/?api=1&query=Rua+Branco+de+Morais+31+-+Chácara+Santo+Antônio,+São+Paulo"
         />
       </div>
       <div className="mx-auto max-w-5xl px-6 pb-16 text-center">
-        <p className="text-sm text-accent/90">Rua Branco de Morais, 31 — Chácara Santo Antônio, São Paulo</p>
+        <p className="text-sm text-accent/90">{"\n"}</p>
       </div>
     </section>
   );
