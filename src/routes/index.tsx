@@ -703,8 +703,8 @@ function PixScreen({ qrUrl, totalPrice, lotLabel, typeLabel, onClose }: { qrUrl:
 
           <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
             <li>Abra o aplicativo do seu banco.</li>
-            <li>Escolha a opção <span className="text-foreground font-medium">Pagamento Pix via QR Code</span>.</li>
-            <li>Escaneie o QR Code abaixo e confirme o pagamento.</li>
+            <li>Selecione <span className="text-foreground font-medium">Pix</span>.</li>
+            <li>Escolha <span className="text-foreground font-medium">Ler QR Code</span> e escaneie o código abaixo — ou use o Pix copia e cola.</li>
             <li>Envie o comprovante pelo WhatsApp para confirmarmos sua inscrição.</li>
           </ol>
 
@@ -722,10 +722,31 @@ function PixScreen({ qrUrl, totalPrice, lotLabel, typeLabel, onClose }: { qrUrl:
             </div>
           )}
 
+          <div className="rounded-md border border-border bg-secondary/40 p-4 space-y-3">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Pix copia e cola</p>
+            <p className="text-[11px] leading-relaxed text-muted-foreground break-all font-mono">{PIX_COPY_PASTE}</p>
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(PIX_COPY_PASTE);
+                  toast.success("Código Pix copiado!");
+                } catch {
+                  toast.error("Não foi possível copiar. Selecione o código manualmente.");
+                }
+              }}
+              className="w-full rounded-full border border-accent px-6 py-2.5 text-xs uppercase tracking-widest font-semibold hover:bg-accent/10"
+            >
+              Copiar código Pix
+            </button>
+          </div>
 
           <p className="text-xs text-center text-muted-foreground">
-            Beneficiário: <span className="text-foreground font-medium">LAIZZA AMANDA VIEGER SALES</span>
+            Chave Pix: <span className="text-foreground font-medium">{PIX_INFO.key}</span>
+            <br />
+            Beneficiário: <span className="text-foreground font-medium">{PIX_INFO.beneficiary}</span>
           </p>
+
 
           <a
             href={waUrl}
