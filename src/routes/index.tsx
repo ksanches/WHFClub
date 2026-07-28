@@ -545,43 +545,8 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
             </Field>
           </Section>
 
-          <Section title="Cupom de desconto">
-            {coupon ? (
-              <div className="flex items-center justify-between gap-4 rounded-md border border-accent bg-accent/10 px-4 py-3 text-sm">
-                <span className="space-y-1">
-                  <span className="block">
-                    Cupom <span className="font-semibold">{coupon.code}</span> aplicado{coupon.description ? ` — ${coupon.description}` : "."}
-                  </span>
-                  <span className="block text-xs text-muted-foreground">
-                    Valor final: <span className="font-semibold text-foreground">{formatBRL(totalPrice)}</span>
-                    {originalTotalPrice !== totalPrice && (
-                      <span> · antes {formatBRL(originalTotalPrice)}</span>
-                    )}
-                  </span>
-                </span>
-                <button type="button" onClick={removeCoupon} className="text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground">
-                  Remover
-                </button>
-              </div>
-            ) : (
-              <div className="flex gap-2">
-                <input
-                  value={couponInput}
-                  onChange={(e) => setCouponInput(e.target.value)}
-                  placeholder="Insira seu cupom"
-                  className={inputCls}
-                />
-                <button
-                  type="button"
-                  onClick={applyCoupon}
-                  disabled={applyingCoupon}
-                  className="rounded-md border border-primary px-4 py-2 text-xs uppercase tracking-widest text-primary hover:bg-primary hover:text-primary-foreground transition disabled:opacity-50"
-                >
-                  {applyingCoupon ? "…" : "Aplicar"}
-                </button>
-              </div>
-            )}
-          </Section>
+
+
 
           {!isFree && (
             <Section title="Forma de pagamento">
