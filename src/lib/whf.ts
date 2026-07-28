@@ -30,7 +30,7 @@ export interface Coupon {
 }
 
 export const CLASS_TIMES = ["11:00"] as const;
-export const CLASS_CAPACITY = 15;
+export const CLASS_CAPACITY = 30;
 
 // Links reais do InfinityPay (cartão). Lotes 2 e 3 a confirmar.
 export const PAYMENT_URLS: Record<string, Record<TicketType, string>> = {
