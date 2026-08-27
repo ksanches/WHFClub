@@ -402,7 +402,7 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
       payment_method: isFree ? "cortesia" : paymentMethod,
       payment_url: isFree ? (coupon?.code ?? "cortesia") : (paymentMethod === "cartao" ? paymentUrl : "pix"),
       status: (coupon?.auto_confirm || isFree) ? "confirmado" : "pendente",
-    });
+    } as any);
     setSubmitting(false);
 
     if (error) {
