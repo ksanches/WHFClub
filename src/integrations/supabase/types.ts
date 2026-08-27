@@ -116,7 +116,7 @@ export type Database = {
       registrations: {
         Row: {
           accept_messages: boolean
-          address: string
+          address: string | null
           class_time: string | null
           cpf: string
           created_at: string
@@ -154,7 +154,7 @@ export type Database = {
         }
         Insert: {
           accept_messages?: boolean
-          address: string
+          address?: string | null
           class_time?: string | null
           cpf: string
           created_at?: string
@@ -192,7 +192,7 @@ export type Database = {
         }
         Update: {
           accept_messages?: boolean
-          address?: string
+          address?: string | null
           class_time?: string | null
           cpf?: string
           created_at?: string
