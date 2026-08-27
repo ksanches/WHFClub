@@ -268,24 +268,17 @@ interface FormState {
   phone: string;
   email: string;
   acceptMessages: boolean;
-  classTime: string;
   partnerFullName: string;
   partnerCpf: string;
   partnerEmail: string;
   partnerPhone: string;
-  parq: (boolean | null)[];
-  parqNotes: string;
-  partnerParq: (boolean | null)[];
-  partnerParqNotes: string;
   suggestions: string;
 }
 
 const initialForm: FormState = {
   fullName: "", cpf: "", address: "", phone: "", email: "",
-  acceptMessages: false, classTime: "",
+  acceptMessages: false,
   partnerFullName: "", partnerCpf: "", partnerEmail: "", partnerPhone: "",
-  parq: Array(7).fill(null), parqNotes: "",
-  partnerParq: Array(7).fill(null), partnerParqNotes: "",
   suggestions: "",
 };
 
