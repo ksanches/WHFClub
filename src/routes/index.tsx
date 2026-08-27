@@ -295,8 +295,6 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
   const [applyingCoupon, setApplyingCoupon] = useState(false);
 
   const isDupla = type === "dupla";
-  const seatsNeeded = isDupla ? 2 : 1;
-  const availableTimes = CLASS_TIMES.filter((t) => (occupancy[t] ?? 0) + seatsNeeded <= CLASS_CAPACITY);
 
   const couponPriceCents = coupon
     ? (type === "individual" ? coupon.individual_price_cents : coupon.dupla_price_cents)
