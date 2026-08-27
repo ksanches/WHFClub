@@ -472,23 +472,6 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
             <Field label="Endereço completo">
               <input required value={form.address} onChange={(e) => update("address", e.target.value)} placeholder="Rua, número, bairro, cidade — SP" className={inputCls} />
             </Field>
-            <Field label="Horário">
-              {availableTimes.length === 0 ? (
-                <p className="text-sm text-destructive">Todas as aulas estão lotadas no momento.</p>
-              ) : (
-                <div className="flex gap-3">
-                  {availableTimes.map((t) => (
-                    <label key={t} className={`flex-1 cursor-pointer text-center rounded-md border p-3 transition ${form.classTime === t ? "border-accent bg-accent/10" : "border-border hover:border-accent"}`}>
-                      <input type="radio" name="classTime" value={t} checked={form.classTime === t} onChange={() => update("classTime", t)} className="sr-only" />
-                      <span className="font-display text-lg">{t}</span>
-                    </label>
-                  ))}
-                </div>
-              )}
-              {isDupla && availableTimes.length < CLASS_TIMES.length && (
-                <p className="mt-2 text-xs text-muted-foreground">Horários com menos de 2 vagas ficam ocultos para duplas.</p>
-              )}
-            </Field>
             <label className="flex items-start gap-3 text-sm">
               <input type="checkbox" checked={form.acceptMessages} onChange={(e) => update("acceptMessages", e.target.checked)} className="mt-1" />
               <span>Aceito receber mensagens da WHF sobre este evento e próximas edições.</span>
