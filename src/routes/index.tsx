@@ -21,6 +21,7 @@ import {
   type PaymentMethod,
 } from "@/lib/whf";
 import { getClassOccupancy } from "@/lib/occupancy.functions";
+import type { WhfEvent } from "@/lib/event";
 
 const WHATSAPP_URL = "https://wa.me/5511965008538";
 
@@ -70,6 +71,7 @@ function LandingPage() {
   const [lots, setLots] = useState<Lot[]>([]);
   const [loading, setLoading] = useState(true);
   const [occupancy, setOccupancy] = useState<Record<string, number>>({});
+  const [event, setEvent] = useState<WhfEvent | null>(null);
 
   async function loadOccupancy() {
     try {
@@ -92,20 +94,27 @@ function LandingPage() {
         setLots(rows.map(mapDbLot));
         setLoading(false);
       });
+    supabase
+      .from("events" as never)
+      .select("*")
+      .eq("active", true)
+      .maybeSingle()
+      .then(({ data }) => setEvent((data as unknown as WhfEvent) ?? null));
     loadOccupancy();
   }, []);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Toaster position="top-center" toastOptions={{ style: { fontFamily: "var(--font-sans)" } }} />
-      <Hero onPickLot={() => document.getElementById("lotes")?.scrollIntoView({ behavior: "smooth" })} />
-      <Manifesto />
-      <EventInfo />
-      <Lots lots={lots} loading={loading} onSelect={(lot, type) => setSelection({ lot, type })} />
+      <Hero event={event} onPickLot={() => document.getElementById("lotes")?.scrollIntoView({ behavior: "smooth" })} />
+      <Manifesto event={event} />
+      <EventInfo event={event} />
+      <Lots event={event} lots={lots} loading={loading} onSelect={(lot, type) => setSelection({ lot, type })} />
       <Footer />
 
       {selection && (
         <RegistrationDialog
+          event={event}
           selection={selection}
           occupancy={occupancy}
           onClose={() => setSelection(null)}
@@ -116,7 +125,7 @@ function LandingPage() {
   );
 }
 
-function Hero({ onPickLot }: { onPickLot: () => void }) {
+function Hero({ event, onPickLot }: { event: WhfEvent | null; onPickLot: () => void }) {
   return (
     <header className="relative overflow-hidden bg-primary text-primary-foreground">
       <div className="absolute inset-0 opacity-[0.08]" style={{
@@ -125,9 +134,9 @@ function Hero({ onPickLot }: { onPickLot: () => void }) {
       <div className="relative mx-auto max-w-5xl px-6 pt-16 pb-20 md:pt-24 md:pb-28 text-center">
         <div className="mx-auto mb-8 wax-seal wordmark text-xl">WHF</div>
         <p className="italic-serif text-accent tracking-widest text-xs md:text-sm uppercase">{"\n"}</p>
-        <h1 className="wordmark mt-6 text-4xl md:text-6xl leading-tight">Talk<br />with WHF.</h1>
-        <p className="italic-serif mt-8 text-lg md:text-2xl text-accent">"Treinar é o plano. Se divertir é a regra."</p>
-        <p className="mt-4 font-display text-2xl md:text-3xl">Uma noite de inglês &amp; jantar</p>
+        <h1 className="wordmark mt-6 text-4xl md:text-6xl leading-tight whitespace-pre-line">{event?.hero_title ?? "Talk\nwith WHF."}</h1>
+        <p className="italic-serif mt-8 text-lg md:text-2xl text-accent">{event?.hero_quote ?? '"Treinar é o plano. Se divertir é a regra."'}</p>
+        <p className="mt-4 font-display text-2xl md:text-3xl">{event?.hero_subtitle ?? "Uma noite de inglês & jantar"}</p>
         <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
           <button onClick={onPickLot} className="rounded-full bg-accent px-8 py-3 text-sm font-semibold uppercase tracking-widest text-primary hover:opacity-90 transition">
             Garantir meu ingresso
@@ -136,40 +145,39 @@ function Hero({ onPickLot }: { onPickLot: () => void }) {
             Sobre o evento
           </a>
         </div>
-        <p className="mt-10 text-xs uppercase tracking-[0.3em] text-accent/80">Califórnia Food · Pinheiros · São Paulo</p>
+        <p className="mt-10 text-xs uppercase tracking-[0.3em] text-accent/80">{event?.hero_location_line ?? "Califórnia Food · Pinheiros · São Paulo"}</p>
       </div>
     </header>
   );
 }
 
-function Manifesto() {
+function Manifesto({ event }: { event: WhfEvent | null }) {
   return (
     <section className="mx-auto max-w-3xl px-6 py-20 text-center">
       <p className="italic-serif text-2xl md:text-3xl leading-snug text-foreground">
-        Aqui ninguém precisa se provar pra pertencer.<br />
-        {"\n"}
+        {event?.manifesto ?? "Aqui ninguém precisa se provar pra pertencer."}
       </p>
       <div className="mt-8 mx-auto h-px w-24 bg-accent/60" />
     </section>
   );
 }
 
-function EventInfo() {
+function EventInfo({ event }: { event: WhfEvent | null }) {
   return (
     <section id="info" className="bg-primary text-primary-foreground">
       <div className="mx-auto max-w-5xl grid md:grid-cols-3 gap-8 px-6 py-16">
-        <InfoBlock label="Data" value="11 de Setembro" />
-        <InfoBlock label="Início" value="18h30" />
+        <InfoBlock label="Data" value={event?.date_label ?? "11 de Setembro"} />
+        <InfoBlock label="Início" value={event?.time_label ?? "18h30"} />
         <InfoBlock
           label="Local"
-          value="Califórnia Food"
-          sub="Pinheiros, São Paulo"
-          href="https://www.google.com/maps/search/?api=1&query=Califórnia+Food+Pinheiros,+São+Paulo"
+          value={event?.venue_name ?? "Califórnia Food"}
+          sub={event?.venue_sub ?? "Pinheiros, São Paulo"}
+          href={event?.maps_url ?? undefined}
         />
       </div>
       <div className="mx-auto max-w-3xl px-6 pb-16 text-center">
         <p className="italic-serif text-lg md:text-xl text-accent/90 leading-relaxed">
-          Uma noite para nos reunirmos e treinarmos o nosso inglês enquanto desfrutamos de um jantar delicioso com o Califórnia — que libera 25% de desconto em cada conta.
+          {event?.description ?? "Uma noite para nos reunirmos e treinarmos o nosso inglês enquanto desfrutamos de um jantar delicioso com o Califórnia — que libera 25% de desconto em cada conta."}
         </p>
       </div>
     </section>
@@ -195,16 +203,15 @@ function InfoBlock({ label, value, sub, href }: { label: string; value: string; 
   );
 }
 
-function Lots({ lots, loading, onSelect }: { lots: Lot[]; loading: boolean; onSelect: (lot: Lot, type: TicketType) => void }) {
+function Lots({ event, lots, loading, onSelect }: { event: WhfEvent | null; lots: Lot[]; loading: boolean; onSelect: (lot: Lot, type: TicketType) => void }) {
   const active = lots.filter((l) => l.active);
   return (
     <section id="lotes" className="mx-auto max-w-3xl px-6 py-20">
       <div className="text-center mb-14">
-        <p className="italic-serif text-accent uppercase tracking-widest text-xs">Talk with WHF · 11 de setembro</p>
+        <p className="italic-serif text-accent uppercase tracking-widest text-xs">{event?.lots_intro ?? "Talk with WHF · 11 de setembro"}</p>
         <h2 className="mt-2 font-display text-4xl md:text-5xl">Reserve sua Vaga</h2>
-        <p className="mt-4 text-sm text-muted-foreground max-w-xl mx-auto">
-          Ingresso individual · pagamento via Pix.&nbsp;{"\n"}
-          Vagas limitadas.
+        <p className="mt-4 text-sm text-muted-foreground max-w-xl mx-auto whitespace-pre-line">
+          {event?.lots_note ?? "Ingresso individual · pagamento via Pix.\nVagas limitadas."}
         </p>
       </div>
 
@@ -281,7 +288,7 @@ const initialForm: FormState = {
   suggestions: "",
 };
 
-function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { selection: Selection; occupancy: Record<string, number>; onClose: () => void; onSubmitted: () => void }) {
+function RegistrationDialog({ event, selection, occupancy, onClose, onSubmitted }: { event: WhfEvent | null; selection: Selection; occupancy: Record<string, number>; onClose: () => void; onSubmitted: () => void }) {
   const { lot, type } = selection;
   const [form, setForm] = useState<FormState>(initialForm);
   const [submitting, setSubmitting] = useState(false);
@@ -433,7 +440,7 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
   }
 
   if (pixConfirmation) {
-    return <PixScreen qrUrl={pixQrUrl} totalPrice={totalPrice} lotLabel={lot.label} typeLabel={isDupla ? "Dupla" : "Individual"} onClose={onClose} />;
+    return <PixScreen event={event} qrUrl={pixQrUrl} totalPrice={totalPrice} lotLabel={lot.label} typeLabel={isDupla ? "Dupla" : "Individual"} onClose={onClose} />;
   }
 
 
@@ -602,11 +609,15 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function PixScreen({ qrUrl, totalPrice, lotLabel, typeLabel, onClose }: { qrUrl: string | null; totalPrice: number; lotLabel: string; typeLabel: string; onClose: () => void }) {
+function PixScreen({ event, qrUrl, totalPrice, lotLabel, typeLabel, onClose }: { event: WhfEvent | null; qrUrl: string | null; totalPrice: number; lotLabel: string; typeLabel: string; onClose: () => void }) {
+  const pixCode = event?.pix_copy_paste ?? PIX_COPY_PASTE;
+  const pixKey = event?.pix_key ?? PIX_INFO.key;
+  const pixBeneficiary = event?.pix_beneficiary ?? PIX_INFO.beneficiary;
+  const whatsappUrl = event?.whatsapp_url ?? WHATSAPP_URL;
   const waMessage = encodeURIComponent(
     `Olá! Segue o comprovante do Pix da inscrição WHF (${lotLabel} · ${typeLabel} · ${formatBRL(totalPrice)}).`
   );
-  const waUrl = `${WHATSAPP_URL}?text=${waMessage}`;
+  const waUrl = `${whatsappUrl}?text=${waMessage}`;
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-primary/70 backdrop-blur-sm p-4 md:p-8">
@@ -649,12 +660,12 @@ function PixScreen({ qrUrl, totalPrice, lotLabel, typeLabel, onClose }: { qrUrl:
 
           <div className="rounded-md border border-border bg-secondary/40 p-4 space-y-3">
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Pix copia e cola</p>
-            <p className="text-[11px] leading-relaxed text-muted-foreground break-all font-mono">{PIX_COPY_PASTE}</p>
+            <p className="text-[11px] leading-relaxed text-muted-foreground break-all font-mono">{pixCode}</p>
             <button
               type="button"
               onClick={async () => {
                 try {
-                  await navigator.clipboard.writeText(PIX_COPY_PASTE);
+                  await navigator.clipboard.writeText(pixCode);
                   toast.success("Código Pix copiado!");
                 } catch {
                   toast.error("Não foi possível copiar. Selecione o código manualmente.");
@@ -667,9 +678,9 @@ function PixScreen({ qrUrl, totalPrice, lotLabel, typeLabel, onClose }: { qrUrl:
           </div>
 
           <p className="text-xs text-center text-muted-foreground">
-            Chave Pix: <span className="text-foreground font-medium">{PIX_INFO.key}</span>
+            Chave Pix: <span className="text-foreground font-medium">{pixKey}</span>
             <br />
-            Beneficiário: <span className="text-foreground font-medium">{PIX_INFO.beneficiary}</span>
+            Beneficiário: <span className="text-foreground font-medium">{pixBeneficiary}</span>
           </p>
 
 

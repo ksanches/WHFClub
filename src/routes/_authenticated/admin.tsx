@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Toaster, toast } from "sonner";
 import * as XLSX from "xlsx";
@@ -279,9 +279,14 @@ function AdminPage() {
 
       <header className="border-b border-border px-6 py-4 flex items-center justify-between">
         <h1 className="font-display text-2xl text-primary">Admin · WHF</h1>
+        <div className="flex items-center gap-5">
+        <Link to="/eventos" className="text-xs uppercase tracking-widest text-muted-foreground hover:text-primary">
+          Eventos
+        </Link>
         <button onClick={signOut} className="text-xs uppercase tracking-widest text-muted-foreground hover:text-primary">
           Sair
         </button>
+        </div>
       </header>
 
       <main className="mx-auto max-w-6xl px-6 py-8 space-y-10">
