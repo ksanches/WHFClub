@@ -52,12 +52,11 @@ export function paymentUrlFor(lotId: string, type: TicketType): string {
 export type PaymentMethod = "cartao" | "pix";
 
 // Pix copia e cola (R$ 79,90)
-export const PIX_COPY_PASTE =
-  "00020126510014BR.GOV.BCB.PIX0129whfclub.comercial@hotmail.com520400005303986540679.905802BR592535.952.024 EDUARDA BARCEL6009SAO PAULO62140510YNqHWGH9QR6304B30C";
+export const PIX_COPY_PASTE = "466beb3b-aeb2-4f54-be1d-05b3c6046cfd";
 
 export const PIX_INFO = {
-  key: "whfclub.comercial@hotmail.com",
-  keyType: "E-mail",
+  key: "466beb3b-aeb2-4f54-be1d-05b3c6046cfd",
+  keyType: "Chave aleatória",
   beneficiary: "35.952.024 EDUARDA BARCELLOS CHAMBARELLI DE NOVAES",
   bank: "—",
   instructions:
