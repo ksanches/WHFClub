@@ -23,7 +23,7 @@ import {
 import { getClassOccupancy } from "@/lib/occupancy.functions";
 import type { WhfEvent } from "@/lib/event";
 
-const WHATSAPP_URL = "https://wa.me/5511965008538";
+const WHATSAPP_URL = "https://wa.me/5521979472858?text=Ol%C3%A1%2C%20segue%20o%20comprovante%20do%20pagamento%20para%20o%20evento%20Talk%20with%20WHF";
 
 
 
@@ -614,11 +614,8 @@ function PixScreen({ event, qrUrl, totalPrice, lotLabel, typeLabel, onClose }: {
   const pixKey = event?.pix_key ?? PIX_INFO.key;
   const pixBeneficiary = event?.pix_beneficiary ?? PIX_INFO.beneficiary;
   const whatsappRaw = event?.whatsapp_url ?? WHATSAPP_URL;
-  const waMessage = `Olá! Segue o comprovante do Pix da inscrição WHF (${lotLabel} · ${typeLabel} · ${formatBRL(totalPrice)}).`;
-  // Aceita link completo (wa.me/..., api.whatsapp.com/...) ou apenas o número
-  const waDigits = (whatsappRaw.match(/\d+/g)?.join("") ?? "").replace(/^0+/, "");
-  const waPhone = waDigits.startsWith("55") ? waDigits : `55${waDigits}`;
-  const waUrl = `https://api.whatsapp.com/send?phone=${waPhone}&text=${encodeURIComponent(waMessage)}`;
+  // Link pronto enviado pelo admin; fallback usa o número/texto configurado.
+  const waUrl = whatsappRaw;
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-primary/70 backdrop-blur-sm p-4 md:p-8">
