@@ -117,7 +117,7 @@ export type Database = {
         Row: {
           accept_messages: boolean
           address: string
-          class_time: string
+          class_time: string | null
           cpf: string
           created_at: string
           email: string
@@ -125,13 +125,13 @@ export type Database = {
           full_name: string
           id: string
           parq_notes: string | null
-          parq_q1: boolean
-          parq_q2: boolean
-          parq_q3: boolean
-          parq_q4: boolean
-          parq_q5: boolean
-          parq_q6: boolean
-          parq_q7: boolean
+          parq_q1: boolean | null
+          parq_q2: boolean | null
+          parq_q3: boolean | null
+          parq_q4: boolean | null
+          parq_q5: boolean | null
+          parq_q6: boolean | null
+          parq_q7: boolean | null
           partner_cpf: string | null
           partner_email: string | null
           partner_full_name: string | null
@@ -155,7 +155,7 @@ export type Database = {
         Insert: {
           accept_messages?: boolean
           address: string
-          class_time: string
+          class_time?: string | null
           cpf: string
           created_at?: string
           email: string
@@ -163,13 +163,13 @@ export type Database = {
           full_name: string
           id?: string
           parq_notes?: string | null
-          parq_q1: boolean
-          parq_q2: boolean
-          parq_q3: boolean
-          parq_q4: boolean
-          parq_q5: boolean
-          parq_q6: boolean
-          parq_q7: boolean
+          parq_q1?: boolean | null
+          parq_q2?: boolean | null
+          parq_q3?: boolean | null
+          parq_q4?: boolean | null
+          parq_q5?: boolean | null
+          parq_q6?: boolean | null
+          parq_q7?: boolean | null
           partner_cpf?: string | null
           partner_email?: string | null
           partner_full_name?: string | null
@@ -193,7 +193,7 @@ export type Database = {
         Update: {
           accept_messages?: boolean
           address?: string
-          class_time?: string
+          class_time?: string | null
           cpf?: string
           created_at?: string
           email?: string
@@ -201,13 +201,13 @@ export type Database = {
           full_name?: string
           id?: string
           parq_notes?: string | null
-          parq_q1?: boolean
-          parq_q2?: boolean
-          parq_q3?: boolean
-          parq_q4?: boolean
-          parq_q5?: boolean
-          parq_q6?: boolean
-          parq_q7?: boolean
+          parq_q1?: boolean | null
+          parq_q2?: boolean | null
+          parq_q3?: boolean | null
+          parq_q4?: boolean | null
+          parq_q5?: boolean | null
+          parq_q6?: boolean | null
+          parq_q7?: boolean | null
           partner_cpf?: string | null
           partner_email?: string | null
           partner_full_name?: string | null
