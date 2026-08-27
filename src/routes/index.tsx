@@ -125,9 +125,9 @@ function Hero({ onPickLot }: { onPickLot: () => void }) {
       <div className="relative mx-auto max-w-5xl px-6 pt-16 pb-20 md:pt-24 md:pb-28 text-center">
         <div className="mx-auto mb-8 wax-seal wordmark text-xl">WHF</div>
         <p className="italic-serif text-accent tracking-widest text-xs md:text-sm uppercase">{"\n"}</p>
-        <h1 className="wordmark mt-6 text-4xl md:text-6xl leading-tight">Wanna<br />Have Fun.</h1>
+        <h1 className="wordmark mt-6 text-4xl md:text-6xl leading-tight">Talk<br />with WHF.</h1>
         <p className="italic-serif mt-8 text-lg md:text-2xl text-accent">"Treinar é o plano. Se divertir é a regra."</p>
-        <p className="mt-4 font-display text-2xl md:text-3xl">Treino Funcional</p>
+        <p className="mt-4 font-display text-2xl md:text-3xl">Uma noite de inglês &amp; jantar</p>
         <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
           <button onClick={onPickLot} className="rounded-full bg-accent px-8 py-3 text-sm font-semibold uppercase tracking-widest text-primary hover:opacity-90 transition">
             Garantir meu ingresso
@@ -136,7 +136,7 @@ function Hero({ onPickLot }: { onPickLot: () => void }) {
             Sobre o evento
           </a>
         </div>
-        <p className="mt-10 text-xs uppercase tracking-[0.3em] text-accent/80">Playa SP Chácara · São Paulo</p>
+        <p className="mt-10 text-xs uppercase tracking-[0.3em] text-accent/80">Califórnia Food · Pinheiros · São Paulo</p>
       </div>
     </header>
   );
@@ -158,17 +158,19 @@ function EventInfo() {
   return (
     <section id="info" className="bg-primary text-primary-foreground">
       <div className="mx-auto max-w-5xl grid md:grid-cols-3 gap-8 px-6 py-16">
-        <InfoBlock label="Data" value="01 de Agosto" />
-        <InfoBlock label="Aula" value="11h" />
+        <InfoBlock label="Data" value="11 de Setembro" />
+        <InfoBlock label="Início" value="18h30" />
         <InfoBlock
           label="Local"
-          value="Playa SP Chácara"
-          sub="Rua Branco de Morais, 31 — Chácara Santo Antônio, São Paulo"
-          href="https://www.google.com/maps/search/?api=1&query=Rua+Branco+de+Morais+31+-+Chácara+Santo+Antônio,+São+Paulo"
+          value="Califórnia Food"
+          sub="Pinheiros, São Paulo"
+          href="https://www.google.com/maps/search/?api=1&query=Califórnia+Food+Pinheiros,+São+Paulo"
         />
       </div>
-      <div className="mx-auto max-w-5xl px-6 pb-16 text-center">
-        <p className="text-sm text-accent/90">{"\n"}</p>
+      <div className="mx-auto max-w-3xl px-6 pb-16 text-center">
+        <p className="italic-serif text-lg md:text-xl text-accent/90 leading-relaxed">
+          Uma noite para nos reunirmos e treinarmos o nosso inglês enquanto desfrutamos de um jantar delicioso com o Califórnia — que libera 25% de desconto em cada conta.
+        </p>
       </div>
     </section>
   );
