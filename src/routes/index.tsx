@@ -364,11 +364,6 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
     if (form.address.trim().length < 5) return toast.error("Informe seu endereço completo.");
     if (!isValidMobileBR(form.phone)) return toast.error("Telefone móvel inválido.");
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email)) return toast.error("E-mail inválido.");
-    if (!form.classTime) return toast.error("Escolha o horário da aula.");
-    if ((occupancy[form.classTime] ?? 0) + seatsNeeded > CLASS_CAPACITY) {
-      return toast.error("Este horário acabou de lotar. Escolha outro.");
-    }
-    if (form.parq.some((v) => v === null)) return toast.error("Responda todo o PAR-Q.");
 
     if (isDupla) {
       if (form.partnerFullName.trim().length < 2) return toast.error("Informe o nome da sua dupla.");
@@ -379,7 +374,6 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.partnerEmail)) return toast.error("E-mail da dupla inválido.");
       if (form.partnerEmail.trim().toLowerCase() === form.email.trim().toLowerCase())
         return toast.error("E-mail da dupla deve ser diferente do seu.");
-      if (form.partnerParq.some((v) => v === null)) return toast.error("Responda todo o PAR-Q da dupla.");
     }
 
     setSubmitting(true);
@@ -393,22 +387,17 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
       ticket_batch: lot.label,
       ticket_type: type,
       ticket_price_cents: Math.round(price * 100),
-      class_time: form.classTime,
+      class_time: null,
       partner_full_name: isDupla ? form.partnerFullName.trim() : null,
       partner_cpf: isDupla ? form.partnerCpf : null,
       partner_email: isDupla ? form.partnerEmail.trim() : null,
       partner_phone: isDupla ? form.partnerPhone : null,
-      parq_q1: form.parq[0]!, parq_q2: form.parq[1]!, parq_q3: form.parq[2]!,
-      parq_q4: form.parq[3]!, parq_q5: form.parq[4]!, parq_q6: form.parq[5]!, parq_q7: form.parq[6]!,
-      parq_notes: form.parqNotes || null,
-      partner_parq_q1: isDupla ? form.partnerParq[0] : null,
-      partner_parq_q2: isDupla ? form.partnerParq[1] : null,
-      partner_parq_q3: isDupla ? form.partnerParq[2] : null,
-      partner_parq_q4: isDupla ? form.partnerParq[3] : null,
-      partner_parq_q5: isDupla ? form.partnerParq[4] : null,
-      partner_parq_q6: isDupla ? form.partnerParq[5] : null,
-      partner_parq_q7: isDupla ? form.partnerParq[6] : null,
-      partner_parq_notes: isDupla ? (form.partnerParqNotes || null) : null,
+      parq_q1: null, parq_q2: null, parq_q3: null,
+      parq_q4: null, parq_q5: null, parq_q6: null, parq_q7: null,
+      parq_notes: null,
+      partner_parq_q1: null, partner_parq_q2: null, partner_parq_q3: null,
+      partner_parq_q4: null, partner_parq_q5: null, partner_parq_q6: null, partner_parq_q7: null,
+      partner_parq_notes: null,
       event_suggestions: form.suggestions || null,
       payment_method: isFree ? "cortesia" : paymentMethod,
       payment_url: isFree ? (coupon?.code ?? "cortesia") : (paymentMethod === "cartao" ? paymentUrl : "pix"),
