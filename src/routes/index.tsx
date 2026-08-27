@@ -264,7 +264,6 @@ function Footer() {
 interface FormState {
   fullName: string;
   cpf: string;
-  address: string;
   phone: string;
   email: string;
   acceptMessages: boolean;
@@ -276,7 +275,7 @@ interface FormState {
 }
 
 const initialForm: FormState = {
-  fullName: "", cpf: "", address: "", phone: "", email: "",
+  fullName: "", cpf: "", phone: "", email: "",
   acceptMessages: false,
   partnerFullName: "", partnerCpf: "", partnerEmail: "", partnerPhone: "",
   suggestions: "",
