@@ -613,11 +613,12 @@ function PixScreen({ event, qrUrl, totalPrice, lotLabel, typeLabel, onClose }: {
   const pixCode = event?.pix_copy_paste ?? PIX_COPY_PASTE;
   const pixKey = event?.pix_key ?? PIX_INFO.key;
   const pixBeneficiary = event?.pix_beneficiary ?? PIX_INFO.beneficiary;
-  const whatsappUrl = event?.whatsapp_url ?? WHATSAPP_URL;
-  const waMessage = encodeURIComponent(
-    `Olá! Segue o comprovante do Pix da inscrição WHF (${lotLabel} · ${typeLabel} · ${formatBRL(totalPrice)}).`
-  );
-  const waUrl = `${whatsappUrl}?text=${waMessage}`;
+  const whatsappRaw = event?.whatsapp_url ?? WHATSAPP_URL;
+  const waMessage = `Olá! Segue o comprovante do Pix da inscrição WHF (${lotLabel} · ${typeLabel} · ${formatBRL(totalPrice)}).`;
+  // Aceita link completo (wa.me/..., api.whatsapp.com/...) ou apenas o número
+  const waDigits = (whatsappRaw.match(/\d+/g)?.join("") ?? "").replace(/^0+/, "");
+  const waPhone = waDigits.startsWith("55") ? waDigits : `55${waDigits}`;
+  const waUrl = `https://api.whatsapp.com/send?phone=${waPhone}&text=${encodeURIComponent(waMessage)}`;
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-primary/70 backdrop-blur-sm p-4 md:p-8">
