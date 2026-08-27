@@ -478,30 +478,24 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
             </label>
           </Section>
 
-          <ParqBlock title="Questionário PAR-Q" answers={form.parq} onChange={(a) => update("parq", a)} notes={form.parqNotes} onNotes={(v) => update("parqNotes", v)} />
-
           {isDupla && (
-            <>
-              <Section title="Dados da sua dupla">
-                <p className="text-xs text-muted-foreground -mt-2">Você está inscrevendo as duas ao mesmo tempo. Preencha todos os dados dela.</p>
-                <Field label="Nome completo">
-                  <input required value={form.partnerFullName} onChange={(e) => update("partnerFullName", e.target.value)} className={inputCls} />
+            <Section title="Dados da sua dupla">
+              <p className="text-xs text-muted-foreground -mt-2">Você está inscrevendo as duas ao mesmo tempo. Preencha todos os dados dela.</p>
+              <Field label="Nome completo">
+                <input required value={form.partnerFullName} onChange={(e) => update("partnerFullName", e.target.value)} className={inputCls} />
+              </Field>
+              <div className="grid md:grid-cols-2 gap-4">
+                <Field label="CPF">
+                  <input required inputMode="numeric" value={form.partnerCpf} onChange={(e) => update("partnerCpf", maskCPF(e.target.value))} placeholder="000.000.000-00" className={inputCls} />
                 </Field>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <Field label="CPF">
-                    <input required inputMode="numeric" value={form.partnerCpf} onChange={(e) => update("partnerCpf", maskCPF(e.target.value))} placeholder="000.000.000-00" className={inputCls} />
-                  </Field>
-                  <Field label="Telefone (celular)">
-                    <input required inputMode="tel" value={form.partnerPhone} onChange={(e) => update("partnerPhone", maskPhone(e.target.value))} placeholder="(11) 91234-5678" className={inputCls} />
-                  </Field>
-                </div>
-                <Field label="E-mail">
-                  <input required type="email" value={form.partnerEmail} onChange={(e) => update("partnerEmail", e.target.value)} className={inputCls} />
+                <Field label="Telefone (celular)">
+                  <input required inputMode="tel" value={form.partnerPhone} onChange={(e) => update("partnerPhone", maskPhone(e.target.value))} placeholder="(11) 91234-5678" className={inputCls} />
                 </Field>
-              </Section>
-
-              <ParqBlock title="Questionário PAR-Q da dupla" answers={form.partnerParq} onChange={(a) => update("partnerParq", a)} notes={form.partnerParqNotes} onNotes={(v) => update("partnerParqNotes", v)} />
-            </>
+              </div>
+              <Field label="E-mail">
+                <input required type="email" value={form.partnerEmail} onChange={(e) => update("partnerEmail", e.target.value)} className={inputCls} />
+              </Field>
+            </Section>
           )}
 
           <Section title="Próximos eventos">
