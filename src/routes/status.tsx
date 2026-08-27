@@ -39,7 +39,7 @@ const VARIANTS: Record<"sucesso" | "pendente" | "erro", Variant> = {
           exato) para o seu e-mail antes do evento.
         </p>
         <p className="mt-3 text-sm text-muted-foreground">
-          01 de agosto · 11h · Playa SP Chácara · Rua Branco de Morais, 31 — Chácara Santo Antônio, São Paulo
+          11 de setembro · 18h30 · Califórnia Food · Pinheiros, São Paulo
         </p>
       </>
     ),

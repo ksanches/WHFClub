@@ -492,7 +492,7 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
             <Field label="Endereço completo">
               <input required value={form.address} onChange={(e) => update("address", e.target.value)} placeholder="Rua, número, bairro, cidade — SP" className={inputCls} />
             </Field>
-            <Field label="Horário da aula">
+            <Field label="Horário">
               {availableTimes.length === 0 ? (
                 <p className="text-sm text-destructive">Todas as aulas estão lotadas no momento.</p>
               ) : (
