@@ -75,22 +75,22 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "WANNA HAVE FUN — Treino Funcional · 01/08 · Playa SP Chácara" },
+      { title: "Talk with WHF — 11/09 · Califórnia Food Pinheiros" },
       {
         name: "description",
         content:
-          "Treino Funcional WHF: 01/08/2026 às 11h no Playa SP Chácara, Rua Branco de Morais, 31 — Chácara Santo Antônio. Ingresso individual por R$ 29,90, pagamento via Pix.",
+          "Talk with WHF: 11/09/2026 às 18h30 no Califórnia Food, Pinheiros. Uma noite para treinar inglês com jantar delicioso (25% de desconto na conta). Ingresso individual por R$ 79,90, pagamento via Pix.",
       },
       { name: "author", content: "WHF Club" },
-      { property: "og:title", content: "WANNA HAVE FUN — Treino Funcional · 01/08 · Playa SP Chácara" },
+      { property: "og:title", content: "Talk with WHF — 11/09 · Califórnia Food Pinheiros" },
       {
         property: "og:description",
-        content: "Treino Funcional WHF: 01/08/2026 às 11h no Playa SP Chácara, Rua Branco de Morais, 31 — Chácara Santo Antônio. Ingresso individual por R$ 29,90, pagamento via Pix.",
+        content: "Talk with WHF: 11/09/2026 às 18h30 no Califórnia Food, Pinheiros. Uma noite para treinar inglês com jantar delicioso (25% de desconto na conta). Ingresso individual por R$ 79,90, pagamento via Pix.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "WANNA HAVE FUN — Treino Funcional · 01/08 · Playa SP Chácara" },
-      { name: "twitter:description", content: "Treino Funcional WHF: 01/08/2026 às 11h no Playa SP Chácara, Rua Branco de Morais, 31 — Chácara Santo Antônio. Ingresso individual por R$ 29,90, pagamento via Pix." },
+      { name: "twitter:title", content: "Talk with WHF — 11/09 · Califórnia Food Pinheiros" },
+      { name: "twitter:description", content: "Talk with WHF: 11/09/2026 às 18h30 no Califórnia Food, Pinheiros. Uma noite para treinar inglês com jantar delicioso (25% de desconto na conta). Ingresso individual por R$ 79,90, pagamento via Pix." },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
