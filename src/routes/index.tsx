@@ -268,24 +268,17 @@ interface FormState {
   phone: string;
   email: string;
   acceptMessages: boolean;
-  classTime: string;
   partnerFullName: string;
   partnerCpf: string;
   partnerEmail: string;
   partnerPhone: string;
-  parq: (boolean | null)[];
-  parqNotes: string;
-  partnerParq: (boolean | null)[];
-  partnerParqNotes: string;
   suggestions: string;
 }
 
 const initialForm: FormState = {
   fullName: "", cpf: "", address: "", phone: "", email: "",
-  acceptMessages: false, classTime: "",
+  acceptMessages: false,
   partnerFullName: "", partnerCpf: "", partnerEmail: "", partnerPhone: "",
-  parq: Array(7).fill(null), parqNotes: "",
-  partnerParq: Array(7).fill(null), partnerParqNotes: "",
   suggestions: "",
 };
 
@@ -302,8 +295,6 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
   const [applyingCoupon, setApplyingCoupon] = useState(false);
 
   const isDupla = type === "dupla";
-  const seatsNeeded = isDupla ? 2 : 1;
-  const availableTimes = CLASS_TIMES.filter((t) => (occupancy[t] ?? 0) + seatsNeeded <= CLASS_CAPACITY);
 
   const couponPriceCents = coupon
     ? (type === "individual" ? coupon.individual_price_cents : coupon.dupla_price_cents)
@@ -373,11 +364,6 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
     if (form.address.trim().length < 5) return toast.error("Informe seu endereço completo.");
     if (!isValidMobileBR(form.phone)) return toast.error("Telefone móvel inválido.");
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email)) return toast.error("E-mail inválido.");
-    if (!form.classTime) return toast.error("Escolha o horário da aula.");
-    if ((occupancy[form.classTime] ?? 0) + seatsNeeded > CLASS_CAPACITY) {
-      return toast.error("Este horário acabou de lotar. Escolha outro.");
-    }
-    if (form.parq.some((v) => v === null)) return toast.error("Responda todo o PAR-Q.");
 
     if (isDupla) {
       if (form.partnerFullName.trim().length < 2) return toast.error("Informe o nome da sua dupla.");
@@ -388,7 +374,6 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.partnerEmail)) return toast.error("E-mail da dupla inválido.");
       if (form.partnerEmail.trim().toLowerCase() === form.email.trim().toLowerCase())
         return toast.error("E-mail da dupla deve ser diferente do seu.");
-      if (form.partnerParq.some((v) => v === null)) return toast.error("Responda todo o PAR-Q da dupla.");
     }
 
     setSubmitting(true);
@@ -402,27 +387,22 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
       ticket_batch: lot.label,
       ticket_type: type,
       ticket_price_cents: Math.round(price * 100),
-      class_time: form.classTime,
+      class_time: null,
       partner_full_name: isDupla ? form.partnerFullName.trim() : null,
       partner_cpf: isDupla ? form.partnerCpf : null,
       partner_email: isDupla ? form.partnerEmail.trim() : null,
       partner_phone: isDupla ? form.partnerPhone : null,
-      parq_q1: form.parq[0]!, parq_q2: form.parq[1]!, parq_q3: form.parq[2]!,
-      parq_q4: form.parq[3]!, parq_q5: form.parq[4]!, parq_q6: form.parq[5]!, parq_q7: form.parq[6]!,
-      parq_notes: form.parqNotes || null,
-      partner_parq_q1: isDupla ? form.partnerParq[0] : null,
-      partner_parq_q2: isDupla ? form.partnerParq[1] : null,
-      partner_parq_q3: isDupla ? form.partnerParq[2] : null,
-      partner_parq_q4: isDupla ? form.partnerParq[3] : null,
-      partner_parq_q5: isDupla ? form.partnerParq[4] : null,
-      partner_parq_q6: isDupla ? form.partnerParq[5] : null,
-      partner_parq_q7: isDupla ? form.partnerParq[6] : null,
-      partner_parq_notes: isDupla ? (form.partnerParqNotes || null) : null,
+      parq_q1: null, parq_q2: null, parq_q3: null,
+      parq_q4: null, parq_q5: null, parq_q6: null, parq_q7: null,
+      parq_notes: null,
+      partner_parq_q1: null, partner_parq_q2: null, partner_parq_q3: null,
+      partner_parq_q4: null, partner_parq_q5: null, partner_parq_q6: null, partner_parq_q7: null,
+      partner_parq_notes: null,
       event_suggestions: form.suggestions || null,
       payment_method: isFree ? "cortesia" : paymentMethod,
       payment_url: isFree ? (coupon?.code ?? "cortesia") : (paymentMethod === "cartao" ? paymentUrl : "pix"),
       status: (coupon?.auto_confirm || isFree) ? "confirmado" : "pendente",
-    });
+    } as any);
     setSubmitting(false);
 
     if (error) {
@@ -492,53 +472,30 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
             <Field label="Endereço completo">
               <input required value={form.address} onChange={(e) => update("address", e.target.value)} placeholder="Rua, número, bairro, cidade — SP" className={inputCls} />
             </Field>
-            <Field label="Horário">
-              {availableTimes.length === 0 ? (
-                <p className="text-sm text-destructive">Todas as aulas estão lotadas no momento.</p>
-              ) : (
-                <div className="flex gap-3">
-                  {availableTimes.map((t) => (
-                    <label key={t} className={`flex-1 cursor-pointer text-center rounded-md border p-3 transition ${form.classTime === t ? "border-accent bg-accent/10" : "border-border hover:border-accent"}`}>
-                      <input type="radio" name="classTime" value={t} checked={form.classTime === t} onChange={() => update("classTime", t)} className="sr-only" />
-                      <span className="font-display text-lg">{t}</span>
-                    </label>
-                  ))}
-                </div>
-              )}
-              {isDupla && availableTimes.length < CLASS_TIMES.length && (
-                <p className="mt-2 text-xs text-muted-foreground">Horários com menos de 2 vagas ficam ocultos para duplas.</p>
-              )}
-            </Field>
             <label className="flex items-start gap-3 text-sm">
               <input type="checkbox" checked={form.acceptMessages} onChange={(e) => update("acceptMessages", e.target.checked)} className="mt-1" />
               <span>Aceito receber mensagens da WHF sobre este evento e próximas edições.</span>
             </label>
           </Section>
 
-          <ParqBlock title="Questionário PAR-Q" answers={form.parq} onChange={(a) => update("parq", a)} notes={form.parqNotes} onNotes={(v) => update("parqNotes", v)} />
-
           {isDupla && (
-            <>
-              <Section title="Dados da sua dupla">
-                <p className="text-xs text-muted-foreground -mt-2">Você está inscrevendo as duas ao mesmo tempo. Preencha todos os dados dela.</p>
-                <Field label="Nome completo">
-                  <input required value={form.partnerFullName} onChange={(e) => update("partnerFullName", e.target.value)} className={inputCls} />
+            <Section title="Dados da sua dupla">
+              <p className="text-xs text-muted-foreground -mt-2">Você está inscrevendo as duas ao mesmo tempo. Preencha todos os dados dela.</p>
+              <Field label="Nome completo">
+                <input required value={form.partnerFullName} onChange={(e) => update("partnerFullName", e.target.value)} className={inputCls} />
+              </Field>
+              <div className="grid md:grid-cols-2 gap-4">
+                <Field label="CPF">
+                  <input required inputMode="numeric" value={form.partnerCpf} onChange={(e) => update("partnerCpf", maskCPF(e.target.value))} placeholder="000.000.000-00" className={inputCls} />
                 </Field>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <Field label="CPF">
-                    <input required inputMode="numeric" value={form.partnerCpf} onChange={(e) => update("partnerCpf", maskCPF(e.target.value))} placeholder="000.000.000-00" className={inputCls} />
-                  </Field>
-                  <Field label="Telefone (celular)">
-                    <input required inputMode="tel" value={form.partnerPhone} onChange={(e) => update("partnerPhone", maskPhone(e.target.value))} placeholder="(11) 91234-5678" className={inputCls} />
-                  </Field>
-                </div>
-                <Field label="E-mail">
-                  <input required type="email" value={form.partnerEmail} onChange={(e) => update("partnerEmail", e.target.value)} className={inputCls} />
+                <Field label="Telefone (celular)">
+                  <input required inputMode="tel" value={form.partnerPhone} onChange={(e) => update("partnerPhone", maskPhone(e.target.value))} placeholder="(11) 91234-5678" className={inputCls} />
                 </Field>
-              </Section>
-
-              <ParqBlock title="Questionário PAR-Q da dupla" answers={form.partnerParq} onChange={(a) => update("partnerParq", a)} notes={form.partnerParqNotes} onNotes={(v) => update("partnerParqNotes", v)} />
-            </>
+              </div>
+              <Field label="E-mail">
+                <input required type="email" value={form.partnerEmail} onChange={(e) => update("partnerEmail", e.target.value)} className={inputCls} />
+              </Field>
+            </Section>
           )}
 
           <Section title="Próximos eventos">
