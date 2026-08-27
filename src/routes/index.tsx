@@ -264,7 +264,6 @@ function Footer() {
 interface FormState {
   fullName: string;
   cpf: string;
-  address: string;
   phone: string;
   email: string;
   acceptMessages: boolean;
@@ -276,7 +275,7 @@ interface FormState {
 }
 
 const initialForm: FormState = {
-  fullName: "", cpf: "", address: "", phone: "", email: "",
+  fullName: "", cpf: "", phone: "", email: "",
   acceptMessages: false,
   partnerFullName: "", partnerCpf: "", partnerEmail: "", partnerPhone: "",
   suggestions: "",
@@ -361,7 +360,6 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
     e.preventDefault();
     if (form.fullName.trim().length < 2) return toast.error("Informe seu nome completo.");
     if (!isValidCPF(form.cpf)) return toast.error("CPF inválido.");
-    if (form.address.trim().length < 5) return toast.error("Informe seu endereço completo.");
     if (!isValidMobileBR(form.phone)) return toast.error("Telefone móvel inválido.");
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email)) return toast.error("E-mail inválido.");
 
@@ -382,7 +380,7 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
       cpf: form.cpf,
       email: form.email.trim(),
       phone: form.phone,
-      address: form.address.trim(),
+      address: null,
       accept_messages: form.acceptMessages,
       ticket_batch: lot.label,
       ticket_type: type,
@@ -468,9 +466,6 @@ function RegistrationDialog({ selection, occupancy, onClose, onSubmitted }: { se
             </div>
             <Field label="E-mail">
               <input required type="email" value={form.email} onChange={(e) => update("email", e.target.value)} className={inputCls} />
-            </Field>
-            <Field label="Endereço completo">
-              <input required value={form.address} onChange={(e) => update("address", e.target.value)} placeholder="Rua, número, bairro, cidade — SP" className={inputCls} />
             </Field>
             <label className="flex items-start gap-3 text-sm">
               <input type="checkbox" checked={form.acceptMessages} onChange={(e) => update("acceptMessages", e.target.checked)} className="mt-1" />
