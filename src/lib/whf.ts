@@ -29,7 +29,7 @@ export interface Coupon {
   active: boolean;
 }
 
-export const CLASS_TIMES = ["11:00"] as const;
+export const CLASS_TIMES = ["18:30"] as const;
 export const CLASS_CAPACITY = 30;
 
 // Links reais do InfinityPay (cartão). Lotes 2 e 3 a confirmar.
@@ -51,9 +51,9 @@ export function paymentUrlFor(lotId: string, type: TicketType): string {
 
 export type PaymentMethod = "cartao" | "pix";
 
-// Pix copia e cola (R$ 29,90)
+// Pix copia e cola (R$ 79,90)
 export const PIX_COPY_PASTE =
-  "00020126510014BR.GOV.BCB.PIX0129whfclub.comercial@hotmail.com520400005303986540529.905802BR592535.952.024 EDUARDA BARCEL6009SAO PAULO62140510YNqHWGH9QR63048F0C";
+  "00020126510014BR.GOV.BCB.PIX0129whfclub.comercial@hotmail.com520400005303986540679.905802BR592535.952.024 EDUARDA BARCEL6009SAO PAULO62140510YNqHWGH9QR6304B30C";
 
 export const PIX_INFO = {
   key: "whfclub.comercial@hotmail.com",
