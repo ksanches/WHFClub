@@ -65,6 +65,81 @@ export type Database = {
         }
         Relationships: []
       }
+      events: {
+        Row: {
+          active: boolean
+          created_at: string
+          date_label: string
+          description: string | null
+          hero_location_line: string | null
+          hero_quote: string | null
+          hero_subtitle: string | null
+          hero_title: string
+          id: string
+          lots_intro: string | null
+          lots_note: string | null
+          manifesto: string | null
+          maps_url: string | null
+          name: string
+          pix_beneficiary: string | null
+          pix_copy_paste: string | null
+          pix_key: string | null
+          time_label: string | null
+          updated_at: string
+          venue_name: string | null
+          venue_sub: string | null
+          whatsapp_url: string | null
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          date_label: string
+          description?: string | null
+          hero_location_line?: string | null
+          hero_quote?: string | null
+          hero_subtitle?: string | null
+          hero_title: string
+          id?: string
+          lots_intro?: string | null
+          lots_note?: string | null
+          manifesto?: string | null
+          maps_url?: string | null
+          name: string
+          pix_beneficiary?: string | null
+          pix_copy_paste?: string | null
+          pix_key?: string | null
+          time_label?: string | null
+          updated_at?: string
+          venue_name?: string | null
+          venue_sub?: string | null
+          whatsapp_url?: string | null
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          date_label?: string
+          description?: string | null
+          hero_location_line?: string | null
+          hero_quote?: string | null
+          hero_subtitle?: string | null
+          hero_title?: string
+          id?: string
+          lots_intro?: string | null
+          lots_note?: string | null
+          manifesto?: string | null
+          maps_url?: string | null
+          name?: string
+          pix_beneficiary?: string | null
+          pix_copy_paste?: string | null
+          pix_key?: string | null
+          time_label?: string | null
+          updated_at?: string
+          venue_name?: string | null
+          venue_sub?: string | null
+          whatsapp_url?: string | null
+        }
+        Relationships: []
+      }
       lots: {
         Row: {
           active: boolean
