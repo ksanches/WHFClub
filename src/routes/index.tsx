@@ -5,6 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   CLASS_TIMES,
   CLASS_CAPACITY,
+  EVENT_CAPACITY,
+  LOW_STOCK_THRESHOLD,
   formatBRL,
   formatCents,
   maskCPF,
@@ -20,7 +22,7 @@ import {
   type TicketType,
   type PaymentMethod,
 } from "@/lib/whf";
-import { getClassOccupancy } from "@/lib/occupancy.functions";
+import { getClassOccupancy, getRegistrationCount } from "@/lib/occupancy.functions";
 import type { WhfEvent } from "@/lib/event";
 
 const WHATSAPP_URL = "https://wa.me/5521979472858?text=Ol%C3%A1%2C%20segue%20o%20comprovante%20do%20pagamento%20para%20o%20evento%20Talk%20with%20WHF";
