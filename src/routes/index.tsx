@@ -71,6 +71,7 @@ function LandingPage() {
   const [lots, setLots] = useState<Lot[]>([]);
   const [loading, setLoading] = useState(true);
   const [occupancy, setOccupancy] = useState<Record<string, number>>({});
+  const [totalRegistered, setTotalRegistered] = useState(0);
   const [event, setEvent] = useState<WhfEvent | null>(null);
 
   async function loadOccupancy() {
@@ -81,6 +82,11 @@ function LandingPage() {
       setOccupancy(map);
     } catch (e) {
       console.error("Failed to load class occupancy", e);
+    }
+    try {
+      setTotalRegistered(await getRegistrationCount());
+    } catch (e) {
+      console.error("Failed to load registration count", e);
     }
   }
 
@@ -103,13 +109,18 @@ function LandingPage() {
     loadOccupancy();
   }, []);
 
+  const remaining = Math.max(0, EVENT_CAPACITY - totalRegistered);
+  const soldOut = remaining <= 0;
+  const lowStock = remaining <= LOW_STOCK_THRESHOLD;
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Toaster position="top-center" toastOptions={{ style: { fontFamily: "var(--font-sans)" } }} />
       <Hero event={event} onPickLot={() => document.getElementById("lotes")?.scrollIntoView({ behavior: "smooth" })} />
       <Manifesto event={event} />
       <EventInfo event={event} />
-      <Lots event={event} lots={lots} loading={loading} onSelect={(lot, type) => setSelection({ lot, type })} />
+      <Lots event={event} lots={lots} loading={loading} soldOut={soldOut} lowStock={lowStock} onSelect={(lot, type) => setSelection({ lot, type })} />
+
       <Footer />
 
       {selection && (
