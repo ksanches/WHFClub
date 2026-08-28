@@ -5,6 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   CLASS_TIMES,
   CLASS_CAPACITY,
+  EVENT_CAPACITY,
+  LOW_STOCK_THRESHOLD,
   formatBRL,
   formatCents,
   maskCPF,
@@ -20,7 +22,7 @@ import {
   type TicketType,
   type PaymentMethod,
 } from "@/lib/whf";
-import { getClassOccupancy } from "@/lib/occupancy.functions";
+import { getClassOccupancy, getRegistrationCount } from "@/lib/occupancy.functions";
 import type { WhfEvent } from "@/lib/event";
 
 const WHATSAPP_URL = "https://wa.me/5521979472858?text=Ol%C3%A1%2C%20segue%20o%20comprovante%20do%20pagamento%20para%20o%20evento%20Talk%20with%20WHF";
@@ -71,6 +73,7 @@ function LandingPage() {
   const [lots, setLots] = useState<Lot[]>([]);
   const [loading, setLoading] = useState(true);
   const [occupancy, setOccupancy] = useState<Record<string, number>>({});
+  const [totalRegistered, setTotalRegistered] = useState(0);
   const [event, setEvent] = useState<WhfEvent | null>(null);
 
   async function loadOccupancy() {
@@ -81,6 +84,11 @@ function LandingPage() {
       setOccupancy(map);
     } catch (e) {
       console.error("Failed to load class occupancy", e);
+    }
+    try {
+      setTotalRegistered(await getRegistrationCount());
+    } catch (e) {
+      console.error("Failed to load registration count", e);
     }
   }
 
@@ -103,13 +111,18 @@ function LandingPage() {
     loadOccupancy();
   }, []);
 
+  const remaining = Math.max(0, EVENT_CAPACITY - totalRegistered);
+  const soldOut = remaining <= 0;
+  const lowStock = remaining <= LOW_STOCK_THRESHOLD;
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Toaster position="top-center" toastOptions={{ style: { fontFamily: "var(--font-sans)" } }} />
       <Hero event={event} onPickLot={() => document.getElementById("lotes")?.scrollIntoView({ behavior: "smooth" })} />
       <Manifesto event={event} />
       <EventInfo event={event} />
-      <Lots event={event} lots={lots} loading={loading} onSelect={(lot, type) => setSelection({ lot, type })} />
+      <Lots event={event} lots={lots} loading={loading} soldOut={soldOut} lowStock={lowStock} onSelect={(lot, type) => setSelection({ lot, type })} />
+
       <Footer />
 
       {selection && (
@@ -203,7 +216,7 @@ function InfoBlock({ label, value, sub, href }: { label: string; value: string; 
   );
 }
 
-function Lots({ event, lots, loading, onSelect }: { event: WhfEvent | null; lots: Lot[]; loading: boolean; onSelect: (lot: Lot, type: TicketType) => void }) {
+function Lots({ event, lots, loading, soldOut, lowStock, onSelect }: { event: WhfEvent | null; lots: Lot[]; loading: boolean; soldOut: boolean; lowStock: boolean; onSelect: (lot: Lot, type: TicketType) => void }) {
   const active = lots.filter((l) => l.active);
   return (
     <section id="lotes" className="mx-auto max-w-3xl px-6 py-20">
@@ -213,10 +226,17 @@ function Lots({ event, lots, loading, onSelect }: { event: WhfEvent | null; lots
         <p className="mt-4 text-sm text-muted-foreground max-w-xl mx-auto whitespace-pre-line">
           {event?.lots_note ?? "Ingresso individual · pagamento via Pix.\nVagas limitadas."}
         </p>
+        {!loading && !soldOut && lowStock && (
+          <p className="mt-6 inline-block rounded-full border border-accent bg-accent/10 px-4 py-1.5 text-[11px] uppercase tracking-widest text-accent">
+            Últimas vagas
+          </p>
+        )}
       </div>
 
       {loading ? (
         <p className="text-center text-muted-foreground">Carregando lotes…</p>
+      ) : soldOut ? (
+        <SoldOut />
       ) : active.length === 0 ? (
         <p className="text-center text-muted-foreground">Nenhum lote disponível no momento.</p>
       ) : (
@@ -227,6 +247,86 @@ function Lots({ event, lots, loading, onSelect }: { event: WhfEvent | null; lots
     </section>
   );
 }
+
+function SoldOut() {
+  return (
+    <div className="space-y-8">
+      <div className="rounded-lg border border-accent/40 bg-primary text-primary-foreground p-8 text-center">
+        <p className="italic-serif text-accent uppercase tracking-widest text-xs">Talk with WHF</p>
+        <h3 className="mt-3 wordmark text-3xl md:text-4xl">Vagas esgotadas</h3>
+        <p className="mt-4 text-sm text-primary-foreground/80">
+          Todas as vagas desta edição foram preenchidas. Entre na lista de espera e avisamos você primeiro sobre o próximo Talk with WHF.
+        </p>
+      </div>
+      <WaitlistForm />
+    </div>
+  );
+}
+
+function WaitlistForm() {
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [notes, setNotes] = useState("");
+  const [sending, setSending] = useState(false);
+  const [done, setDone] = useState(false);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (fullName.trim().length < 2) return toast.error("Informe seu nome completo.");
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) return toast.error("Informe um e-mail válido.");
+    if (!isValidMobileBR(phone)) return toast.error("Informe um celular válido.");
+    setSending(true);
+    const { error } = await supabase.from("waitlist" as never).insert({
+      full_name: fullName.trim(),
+      email: email.trim(),
+      phone: phone.trim(),
+      notes: notes.trim() || null,
+    } as never);
+    setSending(false);
+    if (error) {
+      toast.error("Não foi possível salvar. Tente novamente.");
+      return;
+    }
+    setDone(true);
+    toast.success("Você está na lista de espera!");
+  }
+
+  if (done) {
+    return (
+      <div className="rounded-lg border border-accent/30 bg-card p-8 text-center">
+        <p className="font-display text-xl">Prontinho!</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Assim que abrirmos o próximo Talk with WHF, você recebe o convite antes de todo mundo.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={submit} className="rounded-lg border border-accent/30 bg-card p-8 space-y-4">
+      <div className="text-center">
+        <h4 className="font-display text-2xl">Lista de espera</h4>
+        <p className="mt-1 text-sm text-muted-foreground">Para o próximo Talk with WHF.</p>
+      </div>
+      <div className="grid gap-4 md:grid-cols-2">
+        <input className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" placeholder="Nome completo"
+          value={fullName} onChange={(e) => setFullName(e.target.value)} />
+        <input className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" placeholder="E-mail" type="email"
+          value={email} onChange={(e) => setEmail(e.target.value)} />
+      </div>
+      <input className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" placeholder="Celular (11) 99999-9999"
+        value={phone} onChange={(e) => setPhone(maskPhone(e.target.value))} />
+      <textarea className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" rows={3}
+        placeholder="Quer deixar algum recado? (opcional)" value={notes} onChange={(e) => setNotes(e.target.value)} />
+      <button type="submit" disabled={sending}
+        className="w-full rounded-md bg-primary px-6 py-3 text-sm uppercase tracking-widest text-primary-foreground disabled:opacity-60">
+        {sending ? "Enviando…" : "Entrar na lista de espera"}
+      </button>
+    </form>
+  );
+}
+
 
 function LotCard({ lot, onSelect }: { lot: Lot; onSelect: (lot: Lot, type: TicketType) => void }) {
   return (

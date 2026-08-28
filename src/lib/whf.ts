@@ -32,6 +32,12 @@ export interface Coupon {
 export const CLASS_TIMES = ["18:30"] as const;
 export const CLASS_CAPACITY = 30;
 
+// Capacidade total do evento (uso interno, não exibir número publicamente)
+export const EVENT_CAPACITY = 15;
+// A partir de quantas vagas restantes exibimos "últimas vagas"
+export const LOW_STOCK_THRESHOLD = 7;
+
+
 // Links reais do InfinityPay (cartão). Lotes 2 e 3 a confirmar.
 export const PAYMENT_URLS: Record<string, Record<TicketType, string>> = {
   lote1: {
