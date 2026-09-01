@@ -38,6 +38,13 @@ interface Coupon {
   auto_confirm: boolean;
   valid_for: "individual" | "dupla" | "both";
   active: boolean;
+  event_ids: string[];
+}
+
+interface EventOption {
+  id: string;
+  name: string;
+  active: boolean;
 }
 
 type RegStatus = "pendente" | "confirmado" | "cancelado" | "reembolsado";
@@ -89,6 +96,7 @@ function AdminPage() {
   const [lots, setLots] = useState<Lot[]>([]);
   const [regs, setRegs] = useState<Registration[]>([]);
   const [coupons, setCoupons] = useState<Coupon[]>([]);
+  const [eventOptions, setEventOptions] = useState<EventOption[]>([]);
   const [openRegId, setOpenRegId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -99,7 +107,7 @@ function AdminPage() {
       const admin = !!roles?.some((r) => r.role === "admin");
       setIsAdmin(admin);
       if (!admin) return;
-      await Promise.all([loadLots(), loadRegs(), loadCoupons()]);
+      await Promise.all([loadLots(), loadRegs(), loadCoupons(), loadEvents()]);
     })();
   }, []);
 
@@ -119,6 +127,15 @@ function AdminPage() {
     const { data, error } = await supabase.from("coupons").select("*").order("code");
     if (error) toast.error(error.message);
     else setCoupons((data as Coupon[]) ?? []);
+  }
+
+  async function loadEvents() {
+    const { data, error } = await supabase
+      .from("events" as never)
+      .select("id, name, active")
+      .order("created_at", { ascending: false });
+    if (error) toast.error(error.message);
+    else setEventOptions((data as unknown as EventOption[]) ?? []);
   }
 
   async function toggleLot(lot: Lot) {
@@ -316,7 +333,7 @@ function AdminPage() {
         </section>
 
         {/* Coupons */}
-        <CouponsPanel coupons={coupons} onReload={loadCoupons} />
+        <CouponsPanel coupons={coupons} events={eventOptions} onReload={loadCoupons} />
 
 
 
@@ -870,15 +887,17 @@ const EMPTY_COUPON: Omit<Coupon, "id"> = {
   auto_confirm: false,
   valid_for: "both",
   active: true,
+  event_ids: [],
 };
 
-function CouponsPanel({ coupons, onReload }: { coupons: Coupon[]; onReload: () => Promise<void> }) {
+function CouponsPanel({ coupons, events, onReload }: { coupons: Coupon[]; events: EventOption[]; onReload: () => Promise<void> }) {
   const [editing, setEditing] = useState<Coupon | Omit<Coupon, "id"> | null>(null);
   const isNew = editing !== null && !("id" in editing);
 
   async function save(c: Coupon | Omit<Coupon, "id">) {
     const payload = {
       ...c,
+      event_ids: c.event_ids ?? [],
       code: c.code.trim().toUpperCase(),
       description: c.description?.trim() || null,
       card_url_individual: c.card_url_individual?.trim() || null,
@@ -946,6 +965,7 @@ function CouponsPanel({ coupons, onReload }: { coupons: Coupon[]; onReload: () =
                 <p>Individual: <span className="text-foreground">{c.individual_price_cents !== null ? formatCents(c.individual_price_cents) : "usa preço do evento"}</span></p>
                 <p>Dupla p/ pessoa: <span className="text-foreground">{c.dupla_price_cents !== null ? formatCents(c.dupla_price_cents) : "usa preço do evento"}</span></p>
                 <p>Confirmação automática: <span className="text-foreground">{c.auto_confirm ? "sim" : "não"}</span></p>
+                <p>Eventos: <span className="text-foreground">{!c.event_ids || c.event_ids.length === 0 ? "todos os eventos" : c.event_ids.map((id) => events.find((e) => e.id === id)?.name ?? "—").join(", ")}</span></p>
               </div>
               <div className="mt-4 flex gap-2">
                 <button onClick={() => toggleActive(c)} className="flex-1 rounded-full border border-border py-2 text-[10px] uppercase tracking-widest hover:bg-secondary">
@@ -966,6 +986,7 @@ function CouponsPanel({ coupons, onReload }: { coupons: Coupon[]; onReload: () =
       {editing && (
         <CouponEditor
           coupon={editing}
+          events={events}
           isNew={isNew}
           onCancel={() => setEditing(null)}
           onSave={save}
@@ -977,11 +998,13 @@ function CouponsPanel({ coupons, onReload }: { coupons: Coupon[]; onReload: () =
 
 function CouponEditor({
   coupon,
+  events,
   isNew,
   onCancel,
   onSave,
 }: {
   coupon: Coupon | Omit<Coupon, "id">;
+  events: EventOption[];
   isNew: boolean;
   onCancel: () => void;
   onSave: (c: Coupon | Omit<Coupon, "id">) => Promise<void>;
