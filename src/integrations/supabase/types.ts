@@ -24,6 +24,7 @@ export type Database = {
           created_at: string
           description: string | null
           dupla_price_cents: number | null
+          event_ids: string[]
           id: string
           individual_price_cents: number | null
           pix_qr_dupla_url: string | null
@@ -40,6 +41,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           dupla_price_cents?: number | null
+          event_ids?: string[]
           id?: string
           individual_price_cents?: number | null
           pix_qr_dupla_url?: string | null
@@ -56,6 +58,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           dupla_price_cents?: number | null
+          event_ids?: string[]
           id?: string
           individual_price_cents?: number | null
           pix_qr_dupla_url?: string | null
