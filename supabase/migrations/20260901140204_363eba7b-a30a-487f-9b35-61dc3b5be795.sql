@@ -1,0 +1,1 @@
+ALTER TABLE public.coupons ADD COLUMN IF NOT EXISTS event_ids uuid[] NOT NULL DEFAULT '{}'::uuid[];
