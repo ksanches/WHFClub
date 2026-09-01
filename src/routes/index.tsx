@@ -113,7 +113,8 @@ function LandingPage() {
     loadOccupancy();
   }, []);
 
-  const remaining = Math.max(0, EVENT_CAPACITY - totalRegistered);
+  const activeCapacity = lots.find((l) => l.active)?.capacity ?? EVENT_CAPACITY;
+  const remaining = Math.max(0, activeCapacity - totalRegistered);
   const soldOut = remaining <= 0;
   const lowStock = remaining <= LOW_STOCK_THRESHOLD;
 
