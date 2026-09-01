@@ -53,6 +53,7 @@ function mapDbLot(r: DbLot): Lot {
     id: r.id,
     label: r.label,
     total: r.total,
+    capacity: r.capacity ?? EVENT_CAPACITY,
     individual: r.individual_price_cents / 100,
     dupla: r.dupla_price_cents / 100,
     active: r.active,
