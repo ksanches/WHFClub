@@ -135,7 +135,7 @@ function AdminPage() {
       toast.error(error.message);
       return false;
     }
-    toast.success("Lote atualizado");
+    toast.success("Evento atualizado");
     await loadLots();
     return true;
   }
