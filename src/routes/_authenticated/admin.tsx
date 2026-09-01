@@ -14,6 +14,7 @@ interface Lot {
   id: string;
   label: string;
   total: number;
+  capacity: number;
   individual_price_cents: number;
   dupla_price_cents: number;
   active: boolean;
@@ -135,7 +136,7 @@ function AdminPage() {
       toast.error(error.message);
       return false;
     }
-    toast.success("Lote atualizado");
+    toast.success("Evento atualizado");
     await loadLots();
     return true;
   }
@@ -179,7 +180,7 @@ function AdminPage() {
       "E-mail": r.email,
       "Telefone": r.phone,
       "Endereço": r.address,
-      "Lote": r.ticket_batch,
+      "Evento": r.ticket_batch,
       "Tipo": r.ticket_type,
       "Valor (R$)": (r.ticket_price_cents / 100).toFixed(2).replace(".", ","),
       "Forma de pagamento": r.payment_method === "pix" ? "Pix" : r.payment_method === "cartao" ? "Cartão" : r.payment_method ?? "—",
@@ -295,11 +296,11 @@ function AdminPage() {
 
         {/* Lots */}
         <section>
-          <h2 className="font-display text-xl mb-4">Lotes</h2>
+          <h2 className="font-display text-xl mb-4">Eventos</h2>
           <div className="grid md:grid-cols-3 gap-4">
             {lots.map((lot) => {
               const sold = regs
-                .filter((r) => r.ticket_batch === lot.label && r.status !== "cancelado")
+                .filter((r) => r.ticket_batch === lot.label && r.status === "confirmado")
                 .reduce((sum, r) => sum + (r.ticket_type === "dupla" ? 2 : 1), 0);
               return (
                 <LotEditor
@@ -381,7 +382,7 @@ function AdminPage() {
                   <th className="text-left px-3 py-2">Status</th>
                   <th className="text-left px-3 py-2">Nome</th>
                   <th className="text-left px-3 py-2">Contato</th>
-                  <th className="text-left px-3 py-2">Lote</th>
+                  <th className="text-left px-3 py-2">Evento</th>
                   <th className="text-left px-3 py-2">Tipo</th>
                   <th className="text-left px-3 py-2">Aula</th>
                   <th className="text-left px-3 py-2">Pagamento</th>
@@ -599,6 +600,7 @@ function LotEditor({
   const [editing, setEditing] = useState(false);
   const [label, setLabel] = useState(lot.label);
   const [total, setTotal] = useState(lot.total);
+  const [capacity, setCapacity] = useState(lot.capacity);
   const [individual, setIndividual] = useState((lot.individual_price_cents / 100).toFixed(2));
   const [dupla, setDupla] = useState((lot.dupla_price_cents / 100).toFixed(2));
   const [sortOrder, setSortOrder] = useState(lot.sort_order);
@@ -611,6 +613,7 @@ function LotEditor({
   function reset() {
     setLabel(lot.label);
     setTotal(lot.total);
+    setCapacity(lot.capacity);
     setIndividual((lot.individual_price_cents / 100).toFixed(2));
     setDupla((lot.dupla_price_cents / 100).toFixed(2));
     setSortOrder(lot.sort_order);
@@ -631,6 +634,7 @@ function LotEditor({
     const ok = await onSave({
       label: label.trim(),
       total,
+      capacity,
       individual_price_cents: ind,
       dupla_price_cents: dup,
       sort_order: sortOrder,
@@ -653,7 +657,7 @@ function LotEditor({
           </span>
         </div>
         <p className="mt-2 text-xs text-muted-foreground">
-          {sold}/{lot.total} vagas · {formatCents(lot.individual_price_cents)} indiv. · {formatCents(lot.dupla_price_cents)} dupla
+          {sold}/{lot.capacity} confirmadas · {formatCents(lot.individual_price_cents)} indiv. · {formatCents(lot.dupla_price_cents)} dupla
         </p>
         <p className="mt-1 text-[10px] uppercase tracking-widest text-muted-foreground">Ordem: {lot.sort_order}</p>
         <div className="mt-3 space-y-1 text-[11px] text-muted-foreground">
@@ -698,6 +702,16 @@ function LotEditor({
             min={0}
             value={total}
             onChange={(e) => setTotal(parseInt(e.target.value || "0", 10))}
+            className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+          />
+        </label>
+        <label className="block text-xs uppercase tracking-widest text-muted-foreground">
+          Limite de inscrições
+          <input
+            type="number"
+            min={0}
+            value={capacity}
+            onChange={(e) => setCapacity(parseInt(e.target.value || "0", 10))}
             className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
           />
         </label>
@@ -929,8 +943,8 @@ function CouponsPanel({ coupons, onReload }: { coupons: Coupon[]; onReload: () =
               </div>
               <div className="mt-3 text-xs text-muted-foreground space-y-1">
                 <p>Válido para: <span className="text-foreground">{c.valid_for === "both" ? "Individual e Dupla" : c.valid_for === "individual" ? "Individual" : "Dupla"}</span></p>
-                <p>Individual: <span className="text-foreground">{c.individual_price_cents !== null ? formatCents(c.individual_price_cents) : "usa preço do lote"}</span></p>
-                <p>Dupla p/ pessoa: <span className="text-foreground">{c.dupla_price_cents !== null ? formatCents(c.dupla_price_cents) : "usa preço do lote"}</span></p>
+                <p>Individual: <span className="text-foreground">{c.individual_price_cents !== null ? formatCents(c.individual_price_cents) : "usa preço do evento"}</span></p>
+                <p>Dupla p/ pessoa: <span className="text-foreground">{c.dupla_price_cents !== null ? formatCents(c.dupla_price_cents) : "usa preço do evento"}</span></p>
                 <p>Confirmação automática: <span className="text-foreground">{c.auto_confirm ? "sim" : "não"}</span></p>
               </div>
               <div className="mt-4 flex gap-2">
@@ -1063,7 +1077,7 @@ function CouponEditor({
         </div>
 
         <div className="pt-3 border-t border-border space-y-3">
-          <p className="text-xs uppercase tracking-widest text-muted-foreground">Link de cartão (opcional — sobrescreve o do lote)</p>
+          <p className="text-xs uppercase tracking-widest text-muted-foreground">Link de cartão (opcional — sobrescreve o do evento)</p>
           <label className="block text-[10px] uppercase tracking-widest text-muted-foreground">
             Individual
             <input
@@ -1085,7 +1099,7 @@ function CouponEditor({
         </div>
 
         <div className="pt-3 border-t border-border space-y-3">
-          <p className="text-xs uppercase tracking-widest text-muted-foreground">QR Code Pix (opcional — sobrescreve o do lote)</p>
+          <p className="text-xs uppercase tracking-widest text-muted-foreground">QR Code Pix (opcional — sobrescreve o do evento)</p>
           <QrField
             label="Individual"
             value={form.pix_qr_individual_url ?? ""}

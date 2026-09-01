@@ -37,6 +37,7 @@ interface DbLot {
   id: string;
   label: string;
   total: number;
+  capacity?: number | null;
   individual_price_cents: number;
   dupla_price_cents: number;
   active: boolean;
@@ -52,6 +53,7 @@ function mapDbLot(r: DbLot): Lot {
     id: r.id,
     label: r.label,
     total: r.total,
+    capacity: r.capacity ?? EVENT_CAPACITY,
     individual: r.individual_price_cents / 100,
     dupla: r.dupla_price_cents / 100,
     active: r.active,
@@ -111,7 +113,8 @@ function LandingPage() {
     loadOccupancy();
   }, []);
 
-  const remaining = Math.max(0, EVENT_CAPACITY - totalRegistered);
+  const activeCapacity = lots.find((l) => l.active)?.capacity ?? EVENT_CAPACITY;
+  const remaining = Math.max(0, activeCapacity - totalRegistered);
   const soldOut = remaining <= 0;
   const lowStock = remaining <= LOW_STOCK_THRESHOLD;
 
