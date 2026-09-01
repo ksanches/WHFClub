@@ -148,6 +148,7 @@ export type Database = {
           card_url_individual: string | null
           created_at: string
           dupla_price_cents: number
+          event_id: string | null
           id: string
           individual_price_cents: number
           label: string
@@ -164,6 +165,7 @@ export type Database = {
           card_url_individual?: string | null
           created_at?: string
           dupla_price_cents: number
+          event_id?: string | null
           id: string
           individual_price_cents: number
           label: string
@@ -180,6 +182,7 @@ export type Database = {
           card_url_individual?: string | null
           created_at?: string
           dupla_price_cents?: number
+          event_id?: string | null
           id?: string
           individual_price_cents?: number
           label?: string
@@ -189,7 +192,15 @@ export type Database = {
           total?: number
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "lots_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       registrations: {
         Row: {
