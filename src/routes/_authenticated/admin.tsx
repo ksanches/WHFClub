@@ -1043,6 +1043,38 @@ function CouponEditor({
           <button onClick={onCancel} className="text-2xl leading-none">×</button>
         </div>
 
+        <div className="rounded-md border border-border p-3">
+          <p className="text-xs uppercase tracking-widest text-muted-foreground">Eventos em que o cupom vale</p>
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            Nenhum selecionado = vale para todos os eventos.
+          </p>
+          <div className="mt-2 space-y-1 max-h-40 overflow-y-auto">
+            {events.length === 0 ? (
+              <p className="text-xs text-muted-foreground">Nenhum evento cadastrado.</p>
+            ) : (
+              events.map((ev) => {
+                const selected = (form.event_ids ?? []).includes(ev.id);
+                return (
+                  <label key={ev.id} className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={selected}
+                      onChange={(e) => {
+                        const current = form.event_ids ?? [];
+                        set("event_ids", e.target.checked ? [...current, ev.id] : current.filter((id) => id !== ev.id));
+                      }}
+                    />
+                    <span>{ev.name}</span>
+                    {ev.active && (
+                      <span className="text-[10px] uppercase tracking-widest text-accent">no ar</span>
+                    )}
+                  </label>
+                );
+              })
+            )}
+          </div>
+        </div>
+
         <div className="grid md:grid-cols-2 gap-3">
           <label className="block text-xs uppercase tracking-widest text-muted-foreground">
             Código
