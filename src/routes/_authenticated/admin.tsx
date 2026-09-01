@@ -298,6 +298,9 @@ function AdminPage() {
       <header className="border-b border-border px-6 py-4 flex items-center justify-between">
         <h1 className="font-display text-2xl text-primary">Admin · WHF</h1>
         <div className="flex items-center gap-5">
+        <Link to="/eventos" search={{ create: true }} className="rounded-full bg-primary text-primary-foreground px-4 py-1.5 text-xs uppercase tracking-widest hover:opacity-90">
+          + Novo evento
+        </Link>
         <Link to="/eventos" className="text-xs uppercase tracking-widest text-muted-foreground hover:text-primary">
           Eventos
         </Link>

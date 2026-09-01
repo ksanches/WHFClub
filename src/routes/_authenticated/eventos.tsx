@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Toaster, toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -93,6 +93,7 @@ function slugify(v: string): string {
 }
 
 function EventsAdminPage() {
+  const search = useSearch({ from: "/_authenticated/eventos" }) as { create?: boolean };
   const [events, setEvents] = useState<WhfEvent[]>([]);
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
@@ -116,6 +117,12 @@ function EventsAdminPage() {
   useEffect(() => {
     load();
   }, []);
+
+  useEffect(() => {
+    if (search.create && !creating && !editing) {
+      startCreate();
+    }
+  }, [search.create]);
 
   function ticketOf(ev: WhfEvent): Ticket | null {
     return tickets.find((t) => t.event_id === ev.id) ?? null;
