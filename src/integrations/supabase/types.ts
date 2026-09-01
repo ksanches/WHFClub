@@ -143,6 +143,7 @@ export type Database = {
       lots: {
         Row: {
           active: boolean
+          capacity: number
           card_url_dupla: string | null
           card_url_individual: string | null
           created_at: string
@@ -158,6 +159,7 @@ export type Database = {
         }
         Insert: {
           active?: boolean
+          capacity?: number
           card_url_dupla?: string | null
           card_url_individual?: string | null
           created_at?: string
@@ -173,6 +175,7 @@ export type Database = {
         }
         Update: {
           active?: boolean
+          capacity?: number
           card_url_dupla?: string | null
           card_url_individual?: string | null
           created_at?: string
@@ -369,6 +372,7 @@ export type Database = {
           participants: number
         }[]
       }
+      get_event_capacity: { Args: never; Returns: number }
       get_registration_count: { Args: never; Returns: number }
       has_role: {
         Args: {
