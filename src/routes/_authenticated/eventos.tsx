@@ -93,7 +93,7 @@ function slugify(v: string): string {
 }
 
 function EventsAdminPage() {
-  const search = useSearch({ from: "/_authenticated/eventos" });
+  const search = useSearch({ from: "/_authenticated/eventos" }) as { create?: boolean };
   const [events, setEvents] = useState<WhfEvent[]>([]);
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
