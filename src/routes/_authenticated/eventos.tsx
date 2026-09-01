@@ -445,6 +445,13 @@ function EventsAdminPage() {
                     )}
                   </div>
                   <div className="mt-4 flex flex-wrap gap-2">
+                    <Link
+                      to="/evento/$id"
+                      params={{ id: ev.id }}
+                      className="rounded-full bg-primary text-primary-foreground px-4 py-1.5 text-[11px] uppercase tracking-widest hover:opacity-90"
+                    >
+                      Dashboard
+                    </Link>
                     <button
                       onClick={() => startEdit(ev)}
                       className="rounded-full border border-border px-4 py-1.5 text-[11px] uppercase tracking-widest hover:border-accent"
