@@ -37,6 +37,7 @@ interface DbLot {
   id: string;
   label: string;
   total: number;
+  capacity?: number | null;
   individual_price_cents: number;
   dupla_price_cents: number;
   active: boolean;

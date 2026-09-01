@@ -4,6 +4,7 @@ export interface Lot {
   id: string;
   label: string;
   total: number;
+  capacity: number; // limite de inscrições do evento (uso interno)
   individual: number; // BRL
   dupla: number; // BRL (per person)
   active: boolean;
