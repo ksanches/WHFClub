@@ -12,6 +12,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
 
 interface Lot {
   id: string;
+  event_id: string | null;
   label: string;
   total: number;
   capacity: number;
@@ -649,6 +650,15 @@ function LotEditor({
           <p>📱 QR Indiv.: {lot.pix_qr_individual_url ? <span className="text-foreground">✓</span> : <span className="text-destructive">faltando</span>}</p>
           <p>📱 QR Dupla: {lot.pix_qr_dupla_url ? <span className="text-foreground">✓</span> : <span className="text-destructive">faltando</span>}</p>
         </div>
+        {lot.event_id && (
+          <Link
+            to="/evento/$id"
+            params={{ id: lot.event_id }}
+            className="mt-3 block rounded-full border border-accent py-2 text-center text-xs uppercase tracking-widest hover:bg-accent/10"
+          >
+            Abrir dashboard
+          </Link>
+        )}
         <div className="mt-4 flex gap-2">
           <button
             onClick={onToggle}
