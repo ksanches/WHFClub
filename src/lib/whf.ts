@@ -28,6 +28,8 @@ export interface Coupon {
   auto_confirm: boolean;
   valid_for: "individual" | "dupla" | "both";
   active: boolean;
+  /** Eventos em que o cupom é válido. Vazio = vale para todos. */
+  event_ids?: string[] | null;
 }
 
 export const CLASS_TIMES = ["18:30"] as const;
