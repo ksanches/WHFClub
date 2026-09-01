@@ -448,6 +448,10 @@ function RegistrationDialog({ event, selection, occupancy, onClose, onSubmitted 
     if (error) { toast.error("Erro ao validar cupom."); return; }
     if (!data) { toast.error("Cupom inválido."); return; }
     const c = data as Coupon;
+    if (c.event_ids && c.event_ids.length > 0 && (!event || !c.event_ids.includes(event.id))) {
+      toast.error("Cupom não é válido para este evento.");
+      return;
+    }
     if (c.valid_for !== "both" && c.valid_for !== type) {
       toast.error(`Cupom válido apenas para inscrição ${c.valid_for === "individual" ? "individual" : "em dupla"}.`);
       return;
