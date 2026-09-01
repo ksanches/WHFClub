@@ -26,6 +26,16 @@ interface Ticket {
   sort_order: number;
 }
 
+interface CouponOption {
+  id: string;
+  code: string;
+  description: string | null;
+  individual_price_cents: number | null;
+  dupla_price_cents: number | null;
+  active: boolean;
+  event_ids: string[];
+}
+
 interface TicketDraft {
   label: string;
   capacity: string;
@@ -96,6 +106,8 @@ function EventsAdminPage() {
   const search = useSearch({ from: "/_authenticated/eventos" }) as { create?: boolean };
   const [events, setEvents] = useState<WhfEvent[]>([]);
   const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [coupons, setCoupons] = useState<CouponOption[]>([]);
+  const [selectedCoupons, setSelectedCoupons] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<WhfEvent | null>(null);
   const [creating, setCreating] = useState(false);
@@ -104,13 +116,15 @@ function EventsAdminPage() {
   const [saving, setSaving] = useState(false);
 
   async function load() {
-    const [evRes, lotRes] = await Promise.all([
+    const [evRes, lotRes, cpRes] = await Promise.all([
       supabase.from("events" as never).select("*").order("created_at", { ascending: false }),
       supabase.from("lots" as never).select("*").order("sort_order", { ascending: true }),
+      supabase.from("coupons" as never).select("*").order("code"),
     ]);
     if (evRes.error || lotRes.error) toast.error("Erro ao carregar eventos.");
     setEvents((evRes.data as unknown as WhfEvent[]) ?? []);
     setTickets((lotRes.data as unknown as Ticket[]) ?? []);
+    setCoupons((cpRes.data as unknown as CouponOption[]) ?? []);
     setLoading(false);
   }
 
@@ -133,6 +147,7 @@ function EventsAdminPage() {
     setCreating(true);
     setDraft(toDraft(null));
     setTicket(EMPTY_TICKET);
+    setSelectedCoupons([]);
   }
 
   function startEdit(ev: WhfEvent) {
@@ -140,6 +155,7 @@ function EventsAdminPage() {
     setEditing(ev);
     setDraft(toDraft(ev));
     setTicket(toTicketDraft(ticketOf(ev), ev.name));
+    setSelectedCoupons(coupons.filter((c) => (c.event_ids ?? []).includes(ev.id)).map((c) => c.id));
   }
 
   function cancel() {
@@ -209,6 +225,8 @@ function EventsAdminPage() {
         if (error) throw error;
       }
 
+      await syncCoupons(eventId);
+
       if (publish) await publishEvent(eventId);
 
       toast.success(publish ? "Evento publicado na página principal." : editing ? "Evento atualizado." : "Evento criado.");
@@ -219,6 +237,18 @@ function EventsAdminPage() {
       toast.error("Não foi possível salvar o evento.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function syncCoupons(eventId: string) {
+    for (const c of coupons) {
+      const current = c.event_ids ?? [];
+      const shouldHave = selectedCoupons.includes(c.id);
+      const has = current.includes(eventId);
+      if (shouldHave === has) continue;
+      const next = shouldHave ? [...current, eventId] : current.filter((x) => x !== eventId);
+      const { error } = await supabase.from("coupons" as never).update({ event_ids: next } as never).eq("id", c.id);
+      if (error) toast.error(`Cupom ${c.code}: ${error.message}`);
     }
   }
 
@@ -386,6 +416,51 @@ function EventsAdminPage() {
                     folder={`events/${slugify(draft["name"] || "evento")}/dupla`}
                   />
                 )}
+
+                <div className="md:col-span-2">
+                  <span className="block text-xs uppercase tracking-widest text-muted-foreground mb-1">Cupons de desconto</span>
+                  <p className="text-[11px] text-muted-foreground mb-2">
+                    Selecione um ou mais cupons já criados para valerem neste evento.
+                  </p>
+                  {coupons.length === 0 ? (
+                    <p className="text-xs text-muted-foreground">
+                      Nenhum cupom cadastrado ainda. Crie cupons no painel admin.
+                    </p>
+                  ) : (
+                    <div className="grid sm:grid-cols-2 gap-2">
+                      {coupons.map((c) => {
+                        const checked = selectedCoupons.includes(c.id);
+                        return (
+                          <label
+                            key={c.id}
+                            className={`flex items-start gap-2 rounded-md border px-3 py-2 text-sm cursor-pointer ${checked ? "border-accent bg-accent/5" : "border-border"}`}
+                          >
+                            <input
+                              type="checkbox"
+                              className="mt-1"
+                              checked={checked}
+                              onChange={(e) =>
+                                setSelectedCoupons((prev) =>
+                                  e.target.checked ? [...prev, c.id] : prev.filter((x) => x !== c.id),
+                                )
+                              }
+                            />
+                            <span>
+                              <span className="font-medium">{c.code}</span>
+                              {!c.active && <span className="ml-2 text-[10px] uppercase tracking-widest text-muted-foreground">inativo</span>}
+                              <span className="block text-[11px] text-muted-foreground">
+                                {c.description ??
+                                  (c.individual_price_cents != null
+                                    ? `${(c.individual_price_cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} individual`
+                                    : "sem preço definido")}
+                              </span>
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
