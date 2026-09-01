@@ -15,6 +15,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedEventosRouteImport } from './routes/_authenticated/eventos'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedEventoIdRouteImport } from './routes/_authenticated/evento.$id'
 
 const StatusRoute = StatusRouteImport.update({
   id: '/status',
@@ -45,6 +46,11 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedEventoIdRoute = AuthenticatedEventoIdRouteImport.update({
+  id: '/evento/$id',
+  path: '/evento/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -52,6 +58,7 @@ export interface FileRoutesByFullPath {
   '/status': typeof StatusRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/eventos': typeof AuthenticatedEventosRoute
+  '/evento/$id': typeof AuthenticatedEventoIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -59,6 +66,7 @@ export interface FileRoutesByTo {
   '/status': typeof StatusRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/eventos': typeof AuthenticatedEventosRoute
+  '/evento/$id': typeof AuthenticatedEventoIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -68,12 +76,13 @@ export interface FileRoutesById {
   '/status': typeof StatusRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/eventos': typeof AuthenticatedEventosRoute
+  '/_authenticated/evento/$id': typeof AuthenticatedEventoIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/status' | '/admin' | '/eventos'
+  fullPaths: '/' | '/auth' | '/status' | '/admin' | '/eventos' | '/evento/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/status' | '/admin' | '/eventos'
+  to: '/' | '/auth' | '/status' | '/admin' | '/eventos' | '/evento/$id'
   id:
     | '__root__'
     | '/'
@@ -82,6 +91,7 @@ export interface FileRouteTypes {
     | '/status'
     | '/_authenticated/admin'
     | '/_authenticated/eventos'
+    | '/_authenticated/evento/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -135,17 +145,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/evento/$id': {
+      id: '/_authenticated/evento/$id'
+      path: '/evento/$id'
+      fullPath: '/evento/$id'
+      preLoaderRoute: typeof AuthenticatedEventoIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedEventosRoute: typeof AuthenticatedEventosRoute
+  AuthenticatedEventoIdRoute: typeof AuthenticatedEventoIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedEventosRoute: AuthenticatedEventosRoute,
+  AuthenticatedEventoIdRoute: AuthenticatedEventoIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
