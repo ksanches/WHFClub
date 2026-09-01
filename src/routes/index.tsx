@@ -237,11 +237,11 @@ function Lots({ event, lots, loading, soldOut, lowStock, onSelect }: { event: Wh
       </div>
 
       {loading ? (
-        <p className="text-center text-muted-foreground">Carregando lotes…</p>
+        <p className="text-center text-muted-foreground">Carregando ingressos…</p>
       ) : soldOut ? (
         <SoldOut />
       ) : active.length === 0 ? (
-        <p className="text-center text-muted-foreground">Nenhum lote disponível no momento.</p>
+        <p className="text-center text-muted-foreground">Nenhum ingresso disponível no momento.</p>
       ) : (
         <div className="grid gap-6">
           {active.map((lot) => <LotCard key={lot.id} lot={lot} onSelect={onSelect} />)}
