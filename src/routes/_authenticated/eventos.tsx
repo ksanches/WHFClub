@@ -7,7 +7,7 @@ import { EMPTY_EVENT, EVENT_FIELDS, type WhfEvent } from "@/lib/event";
 export const Route = createFileRoute("/_authenticated/eventos")({
   component: EventsAdminPage,
   validateSearch: (search: Record<string, unknown>) => ({
-    create: search.create === true || search.create === "true",
+    create: search.create === true || search.create === "true" ? true : undefined,
   }),
 });
 
