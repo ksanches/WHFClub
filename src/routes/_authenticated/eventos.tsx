@@ -178,8 +178,7 @@ function EventsAdminPage() {
 
     const indCents = toCents(ticket.individual);
     if (!Number.isFinite(indCents) || indCents < 0) return toast.error("Informe o valor do ingresso individual.");
-    const dupCents = ticket.hasDupla ? toCents(ticket.dupla) : 0;
-    if (!Number.isFinite(dupCents)) return toast.error("Informe o valor do ingresso em dupla.");
+    const dupCents = 0;
     const capacity = parseInt(ticket.capacity || "0", 10);
     if (!Number.isFinite(capacity) || capacity <= 0) return toast.error("Informe o limite de inscrições.");
 
@@ -215,9 +214,9 @@ function EventsAdminPage() {
         individual_price_cents: indCents,
         dupla_price_cents: dupCents,
         card_url_individual: ticket.cardIndividual.trim() || null,
-        card_url_dupla: ticket.cardDupla.trim() || null,
+        card_url_dupla: null,
         pix_qr_individual_url: ticket.pixIndividual.trim() || null,
-        pix_qr_dupla_url: ticket.pixDupla.trim() || null,
+        pix_qr_dupla_url: null,
         event_id: eventId,
       };
 
