@@ -387,14 +387,6 @@ function EventsAdminPage() {
                   onChange={(v) => setTicket((t) => ({ ...t, pixIndividual: v }))}
                   folder={`events/${slugify(draft["name"] || "evento")}/individual`}
                 />
-                {ticket.hasDupla && (
-                  <QrUpload
-                    label="QR Code Pix · dupla"
-                    value={ticket.pixDupla}
-                    onChange={(v) => setTicket((t) => ({ ...t, pixDupla: v }))}
-                    folder={`events/${slugify(draft["name"] || "evento")}/dupla`}
-                  />
-                )}
 
                 <div className="md:col-span-2">
                   <span className="block text-xs uppercase tracking-widest text-muted-foreground mb-1">Cupons de desconto</span>
