@@ -5,6 +5,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { EMPTY_EVENT, EVENT_FIELDS, type WhfEvent } from "@/lib/event";
 
 export const Route = createFileRoute("/_authenticated/eventos")({
+  head: () => ({ meta: [
+    { title: "Gerenciar eventos · WHF" },
+    { name: "description", content: "Cadastro, edição e publicação dos eventos WHF." },
+    { property: "og:title", content: "Gerenciar eventos · WHF" },
+    { property: "og:description", content: "Cadastro, edição e publicação dos eventos WHF." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: EventsAdminPage,
 });
 

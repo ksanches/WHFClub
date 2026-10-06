@@ -6,6 +6,14 @@ import { supabase } from "@/integrations/supabase/client";
 
 
 export const Route = createFileRoute("/auth")({
+  head: () => ({ meta: [
+    { title: "Acesso das administradoras · WHF" },
+    { name: "description", content: "Acesso à administração dos eventos e inscrições WHF." },
+    { property: "og:title", content: "Acesso das administradoras · WHF" },
+    { property: "og:description", content: "Acesso à administração dos eventos e inscrições WHF." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: AuthPage,
 });
 

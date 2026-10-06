@@ -7,6 +7,14 @@ import { formatCents } from "@/lib/whf";
 
 
 export const Route = createFileRoute("/_authenticated/admin")({
+  head: () => ({ meta: [
+    { title: "Administração · WHF" },
+    { name: "description", content: "Gestão de inscrições, pagamentos e cupons dos eventos WHF." },
+    { property: "og:title", content: "Administração · WHF" },
+    { property: "og:description", content: "Gestão de inscrições, pagamentos e cupons dos eventos WHF." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: AdminPage,
 });
 
