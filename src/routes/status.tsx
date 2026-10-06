@@ -11,6 +11,11 @@ export const Route = createFileRoute("/status")({
   head: () => ({
     meta: [
       { title: "Status da inscrição · WHF" },
+      { name: "description", content: "Consulte o status da sua inscrição e pagamento para os eventos WHF." },
+      { property: "og:title", content: "Status da inscrição · WHF" },
+      { property: "og:description", content: "Consulte o status da sua inscrição e pagamento para os eventos WHF." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
     ],
   }),

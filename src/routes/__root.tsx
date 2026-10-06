@@ -75,22 +75,22 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Talk with WHF — 11/09 · Califórnia Food Pinheiros" },
+      { title: "WHF Club" },
       {
         name: "description",
         content:
-          "Talk with WHF: 11/09/2026 às 18h30 no Califórnia Food, Pinheiros. Uma noite para treinar inglês com jantar delicioso (25% de desconto na conta). Ingresso individual por R$ 79,90, pagamento via Pix.",
+          "WHF Club — eventos, movimento e conexão entre mulheres.",
       },
       { name: "author", content: "WHF Club" },
-      { property: "og:title", content: "Talk with WHF — 11/09 · Califórnia Food Pinheiros" },
+      { property: "og:title", content: "WHF Club" },
       {
         property: "og:description",
-        content: "Talk with WHF: 11/09/2026 às 18h30 no Califórnia Food, Pinheiros. Uma noite para treinar inglês com jantar delicioso (25% de desconto na conta). Ingresso individual por R$ 79,90, pagamento via Pix.",
+        content: "WHF Club — eventos, movimento e conexão entre mulheres.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "Talk with WHF — 11/09 · Califórnia Food Pinheiros" },
-      { name: "twitter:description", content: "Talk with WHF: 11/09/2026 às 18h30 no Califórnia Food, Pinheiros. Uma noite para treinar inglês com jantar delicioso (25% de desconto na conta). Ingresso individual por R$ 79,90, pagamento via Pix." },
+      { name: "twitter:title", content: "WHF Club" },
+      { name: "twitter:description", content: "WHF Club — eventos, movimento e conexão entre mulheres." },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

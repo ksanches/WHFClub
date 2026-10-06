@@ -7,6 +7,14 @@ import { formatCents } from "@/lib/whf";
 import type { WhfEvent } from "@/lib/event";
 
 export const Route = createFileRoute("/_authenticated/evento/$id")({
+  head: () => ({ meta: [
+    { title: "Dashboard do evento · WHF" },
+    { name: "description", content: "Participantes, financeiro, ingressos e cupons de cada evento WHF." },
+    { property: "og:title", content: "Dashboard do evento · WHF" },
+    { property: "og:description", content: "Participantes, financeiro, ingressos e cupons de cada evento WHF." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: EventDashboard,
 });
 

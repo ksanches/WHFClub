@@ -24,12 +24,21 @@ import {
 } from "@/lib/whf";
 import { getClassOccupancy, getRegistrationCount } from "@/lib/occupancy.functions";
 import type { WhfEvent } from "@/lib/event";
+import { BaleEvent } from "@/components/bale-event";
 
 const WHATSAPP_URL = "https://wa.me/5521979472858?text=Ol%C3%A1%2C%20segue%20o%20comprovante%20do%20pagamento%20para%20o%20evento%20Talk%20with%20WHF";
 
 
 
 export const Route = createFileRoute("/")({
+  head: () => ({ meta: [
+    { title: "Aula de Balé + Brunch · WHF Florianópolis" },
+    { name: "description", content: "11 de outubro às 8h na Casa Múltiplas, Florianópolis. Balé + funcional com Giovana Isotton, brunch e kit por R$ 79,90." },
+    { property: "og:title", content: "Aula de Balé + Brunch · WHF Florianópolis" },
+    { property: "og:description", content: "Uma manhã de movimento e conexão: aula, brunch e kit. 11 de outubro às 8h, Casa Múltiplas. R$ 79,90." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary_large_image" },
+  ] }),
   component: LandingPage,
 });
 
@@ -117,16 +126,20 @@ function LandingPage() {
   const remaining = Math.max(0, activeCapacity - totalRegistered);
   const soldOut = remaining <= 0;
   const lowStock = remaining <= LOW_STOCK_THRESHOLD;
+  const isBale = event?.name === "Aula de Balé + Brunch";
+  const sales = <Lots event={event} lots={lots} loading={loading} soldOut={soldOut} lowStock={lowStock} onSelect={(lot, type) => setSelection({ lot, type })} />;
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className={`min-h-screen bg-background text-foreground ${isBale ? "bale-page" : ""}`}>
       <Toaster position="top-center" toastOptions={{ style: { fontFamily: "var(--font-sans)" } }} />
+      {isBale && event ? <BaleEvent event={event}>{sales}</BaleEvent> : <>
       <Hero event={event} onPickLot={() => document.getElementById("lotes")?.scrollIntoView({ behavior: "smooth" })} />
       <Manifesto event={event} />
       <EventInfo event={event} />
-      <Lots event={event} lots={lots} loading={loading} soldOut={soldOut} lowStock={lowStock} onSelect={(lot, type) => setSelection({ lot, type })} />
+      {sales}
+      </>}
 
-      <Footer />
+      <Footer city={isBale ? "Florianópolis" : "São Paulo"} />
 
       {selection && (
         <RegistrationDialog
@@ -359,11 +372,11 @@ function PriceRow({ title, subtitle, price, highlight, onClick }: { title: strin
   );
 }
 
-function Footer() {
+function Footer({ city }: { city: string }) {
   return (
     <footer className="bg-primary text-primary-foreground/80 py-10 text-center">
       <p className="italic-serif text-accent text-sm">"Mulher com tribo chega mais longe."</p>
-      <p className="mt-4 wordmark text-xs">WHF · São Paulo</p>
+      <p className="mt-4 wordmark text-xs">WHF · {city}</p>
       <p className="mt-4"><Link to="/auth" className="text-[10px] uppercase tracking-widest text-primary-foreground/50 hover:text-accent">Admin</Link></p>
     </footer>
   );
