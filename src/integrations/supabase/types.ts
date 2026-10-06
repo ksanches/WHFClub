@@ -216,6 +216,7 @@ export type Database = {
           event_suggestions: string | null
           full_name: string
           id: string
+          image_consent: boolean
           parq_notes: string | null
           parq_q1: boolean | null
           parq_q2: boolean | null
@@ -254,6 +255,7 @@ export type Database = {
           event_suggestions?: string | null
           full_name: string
           id?: string
+          image_consent?: boolean
           parq_notes?: string | null
           parq_q1?: boolean | null
           parq_q2?: boolean | null
@@ -292,6 +294,7 @@ export type Database = {
           event_suggestions?: string | null
           full_name?: string
           id?: string
+          image_consent?: boolean
           parq_notes?: string | null
           parq_q1?: boolean | null
           parq_q2?: boolean | null

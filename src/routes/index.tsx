@@ -417,6 +417,12 @@ function RegistrationDialog({ event, selection, occupancy, onClose, onSubmitted 
   const [applyingCoupon, setApplyingCoupon] = useState(false);
 
   const isDupla = type === "dupla";
+  const needsParq = !/talk/i.test(event?.name ?? "");
+  const [parq, setParq] = useState<(boolean | null)[]>(Array(7).fill(null));
+  const [partnerParq, setPartnerParq] = useState<(boolean | null)[]>(Array(7).fill(null));
+  const [parqNotes, setParqNotes] = useState("");
+  const [partnerParqNotes, setPartnerParqNotes] = useState("");
+  const [imageConsent, setImageConsent] = useState(false);
 
   const couponPriceCents = coupon
     ? (type === "individual" ? coupon.individual_price_cents : coupon.dupla_price_cents)
@@ -501,6 +507,15 @@ function RegistrationDialog({ event, selection, occupancy, onClose, onSubmitted 
         return toast.error("E-mail da dupla deve ser diferente do seu.");
     }
 
+    if (needsParq) {
+      if (parq.some((a) => a === null)) return toast.error("Responda todas as perguntas do PAR-Q.");
+      if (isDupla && partnerParq.some((a) => a === null)) return toast.error("Responda todas as perguntas do PAR-Q da sua dupla.");
+    }
+    if (!imageConsent) return toast.error("É necessário aceitar o termo de uso de imagem e voz.");
+
+    const pq = needsParq ? parq : Array(7).fill(null);
+    const ppq = needsParq && isDupla ? partnerParq : Array(7).fill(null);
+
     setSubmitting(true);
     const { error } = await supabase.from("registrations").insert({
       full_name: form.fullName.trim(),
@@ -517,12 +532,13 @@ function RegistrationDialog({ event, selection, occupancy, onClose, onSubmitted 
       partner_cpf: isDupla ? form.partnerCpf : null,
       partner_email: isDupla ? form.partnerEmail.trim() : null,
       partner_phone: isDupla ? form.partnerPhone : null,
-      parq_q1: null, parq_q2: null, parq_q3: null,
-      parq_q4: null, parq_q5: null, parq_q6: null, parq_q7: null,
-      parq_notes: null,
-      partner_parq_q1: null, partner_parq_q2: null, partner_parq_q3: null,
-      partner_parq_q4: null, partner_parq_q5: null, partner_parq_q6: null, partner_parq_q7: null,
-      partner_parq_notes: null,
+      parq_q1: pq[0], parq_q2: pq[1], parq_q3: pq[2],
+      parq_q4: pq[3], parq_q5: pq[4], parq_q6: pq[5], parq_q7: pq[6],
+      parq_notes: needsParq ? parqNotes.trim() || null : null,
+      partner_parq_q1: ppq[0], partner_parq_q2: ppq[1], partner_parq_q3: ppq[2],
+      partner_parq_q4: ppq[3], partner_parq_q5: ppq[4], partner_parq_q6: ppq[5], partner_parq_q7: ppq[6],
+      partner_parq_notes: needsParq && isDupla ? partnerParqNotes.trim() || null : null,
+      image_consent: imageConsent,
       event_suggestions: form.suggestions || null,
       payment_method: isFree ? "cortesia" : paymentMethod,
       payment_url: isFree ? (coupon?.code ?? "cortesia") : (paymentMethod === "cartao" ? paymentUrl : "pix"),
@@ -620,11 +636,50 @@ function RegistrationDialog({ event, selection, occupancy, onClose, onSubmitted 
             </Section>
           )}
 
+          {needsParq && (
+            <ParqBlock title="Questionário PAR-Q" answers={parq} onChange={setParq} notes={parqNotes} onNotes={setParqNotes} />
+          )}
+          {needsParq && isDupla && (
+            <ParqBlock title="PAR-Q da sua dupla" answers={partnerParq} onChange={setPartnerParq} notes={partnerParqNotes} onNotes={setPartnerParqNotes} />
+          )}
+
           <Section title="Próximos eventos">
             <Field label="Sugestões para próximas edições (opcional)">
               <textarea rows={3} value={form.suggestions} onChange={(e) => update("suggestions", e.target.value)} placeholder="Do que você gostaria de participar?" className={inputCls} />
             </Field>
           </Section>
+
+          <Section title="Cupom de desconto">
+            {coupon ? (
+              <div className="flex items-center justify-between gap-3 rounded-md border border-accent bg-accent/10 px-4 py-3 text-sm">
+                <span>
+                  Cupom <strong>{coupon.code}</strong> aplicado ·{" "}
+                  {totalPrice !== originalTotalPrice && <s className="text-muted-foreground mr-1">{formatBRL(originalTotalPrice)}</s>}
+                  <strong>{formatBRL(totalPrice)}</strong>
+                </span>
+                <button type="button" onClick={removeCoupon} className="text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground">Remover</button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <input value={couponInput} onChange={(e) => setCouponInput(e.target.value.toUpperCase())} placeholder="Digite seu cupom" className={inputCls} />
+                <button type="button" onClick={applyCoupon} disabled={applyingCoupon}
+                  className="rounded-full border border-primary px-5 text-xs uppercase tracking-widest hover:bg-primary hover:text-primary-foreground disabled:opacity-60">
+                  {applyingCoupon ? "..." : "Aplicar"}
+                </button>
+              </div>
+            )}
+          </Section>
+
+          <Section title="Uso de imagem e voz">
+            <label className="flex items-start gap-3 text-sm">
+              <input type="checkbox" required checked={imageConsent} onChange={(e) => setImageConsent(e.target.checked)} className="mt-1" />
+              <span>
+                Autorizo, de forma gratuita e por prazo indeterminado, o uso da minha imagem e voz{isDupla ? " (e declaro que minha dupla também autoriza)" : ""} captadas
+                em fotos e vídeos durante o evento, para divulgação da WHF em redes sociais, site e materiais institucionais.
+              </span>
+            </label>
+          </Section>
+
 
 
 
