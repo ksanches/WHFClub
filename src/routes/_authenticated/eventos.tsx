@@ -372,40 +372,11 @@ function EventsAdminPage() {
                     className={inputCls}
                   />
                 </label>
-                <div className="block">
-                  <span className="block text-xs uppercase tracking-widest text-muted-foreground mb-1">Ingresso em dupla</span>
-                  <label className="flex items-center gap-2 text-sm">
-                    <input
-                      type="checkbox"
-                      checked={ticket.hasDupla}
-                      onChange={(e) => setTicket((t) => ({ ...t, hasDupla: e.target.checked }))}
-                    />
-                    Oferecer ingresso em dupla
-                  </label>
-                  {ticket.hasDupla && (
-                    <input
-                      inputMode="decimal"
-                      value={ticket.dupla}
-                      onChange={(e) => setTicket((t) => ({ ...t, dupla: e.target.value }))}
-                      placeholder="Valor por pessoa (R$)"
-                      className={`${inputCls} mt-2`}
-                    />
-                  )}
-                </div>
                 <label className="block">
                   <span className="block text-xs uppercase tracking-widest text-muted-foreground mb-1">Link cartão · individual</span>
                   <input
                     value={ticket.cardIndividual}
                     onChange={(e) => setTicket((t) => ({ ...t, cardIndividual: e.target.value }))}
-                    placeholder="https://link.infinitepay.io/..."
-                    className={inputCls}
-                  />
-                </label>
-                <label className="block">
-                  <span className="block text-xs uppercase tracking-widest text-muted-foreground mb-1">Link cartão · dupla</span>
-                  <input
-                    value={ticket.cardDupla}
-                    onChange={(e) => setTicket((t) => ({ ...t, cardDupla: e.target.value }))}
                     placeholder="https://link.infinitepay.io/..."
                     className={inputCls}
                   />
