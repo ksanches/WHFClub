@@ -1,0 +1,1 @@
+ALTER TABLE public.registrations ADD COLUMN IF NOT EXISTS image_consent boolean NOT NULL DEFAULT false;
